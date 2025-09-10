@@ -608,9 +608,9 @@ select * from uta;
 --union
 --1. [대응]대는 [컬럼]의 [타입]이 동일
 
-select empno , ename from emp
-union
-select dname , deptno from dept;
+--select empno , ename from emp
+--union
+--select dname , deptno from dept;
 --ORA-01790: expression must have same datatype as corresponding expression
 
 select empno , ename from emp
@@ -628,9 +628,9 @@ order by m.empno desc;
 
 --2. [대응]대는 [컬럼]의 [개수]가 동일
 
-select empno , ename , job , sal from emp
-union 
-select deptno , dname , loc , null from dept;
+--select empno , ename , job , sal from emp
+--union 
+--select deptno , dname , loc , null from dept;
 --ORA-01789: query block has incorrect number of result columns
 
 select empno , ename , job , sal from emp

@@ -559,7 +559,7 @@ select * from emp where regexp_like(ename, '[A-C]');
     데이터 정렬하기
     order by 컬럼명 : 문자열 , 숫자 , 날짜 정렬 가능
     오름차순 : asc 낮은순 : 이게 default
-    내림차순 : desc 높은순  asending desending
+    내림차순 : desc 높은순 
     정렬은 서버입장에서 cost(cpu 메모리) 많이 든다
        
 */
@@ -647,14 +647,14 @@ DDD
 union
 1. [대응]되는 [컬럼]의 [타입]이 동일
 */
-select empno, ename from emp
+select empno , ename from emp
 union
-select dname, deptno from dept;
+select dname , deptno from dept;
 --ORA-01790: expression must have same datatype as corresponding expression
 -- empno 숫자 dname 문자 이러니 에러뜨는것
-select empno, ename from emp
+select empno , ename from emp
 union
-select deptno, dname from dept;
+select deptno , dname from dept;
 
 -- subquery 사용해서  가상테이블 만들기
 select *
@@ -669,18 +669,18 @@ order by m.empno desc;
 -- order by m.empno desc; 해서 정렬시키는것
 
 -- 2. [대응] 되는 [컬럼]의 [개수]가 동일
-select empno , ename , job , sal from emp
-union
-select deptno, dname , loc from dept;
+--select empno , ename , job , sal from emp
+--union
+--select deptno, dname , loc from dept;
 -- ORA-01789: query block has incorrect number of result columns
 -- 컬럼의 갯수가 안맞음
 select empno , ename , job , sal from emp
-union
-select deptno, dname , loc null from dept;
+union 
+select deptno , dname , loc , null from dept;
 --null 들어가는데 null 넣거나 특정 입력값 넣어도된다. 보통은 null을 쓴다.
 select empno , ename , job , sal from emp
-union
-select deptno, dname , loc 10 from dept;
+union 
+select deptno , dname , loc , 10 from dept;
 ---------------------------------------------------
 -- 자바에서 제어문 끝난 느낌
 -- 초급 개발자가 단일 테이블 대상으로 쿼리문장을 쓸수 있다.
@@ -704,6 +704,7 @@ select ename , lower(ename) as ename from emp;
 select *
 from emp
 where lower(ename)= 'king';
+
 select length('abcd') from dual;
 
 select concat('a','b') from dual;
@@ -731,9 +732,11 @@ select lower(substr(ename,1,1)) from emp;
 --select substr(ename,2) from emp;
 select substr(ename, 2,length(ename)) from emp;
 
+
+
 select lower(substr(ename,1,1)) || ' ' || upper(substr(ename,2,length(ename)))
 as fullname
-form emp;
+from emp;
 
 
 select lpad('ABC', 10, '*') from dual;
@@ -749,14 +752,16 @@ select rpad(substr('k123', 1,2),length('k123'),'*' ) from dual;
 --emp 테이블에 적용하면
 select rpad(substr(ename, 1,2),length(ename),'*' ) from emp;
 
-select rtrim("MILLER','ER') from dual;
-select ltrim("MILLLLLLER','MIL') from dual; -- L다잡아서 ER나옴
+select rtrim('MILLER','ER') from dual;
+select ltrim('MILLLLLLLLLLLLER','MIL') from dual;
+-- L다잡아서 ER나옴
 
-select '>' || rtrim('MILLER        ', '  ') || '<' from dual; 
+select '>' || rtrim('MILLER     ',' ') || '<' from dual;
 -- 우측 공백을 찾아서 제거해라
 
 --치환함수
-select ename , replace(enmae, 'A', '와우') from emp;
+select ename , replace(ename,'A','와우') from emp;
+
 -------------------------------------------------------------------
 --문자열 함수 end
 -------------------------------------------------------
@@ -840,12 +845,14 @@ select to_number('100') + 100 from dual; -- 컴파일러가 자동으로 붙인�
 
 
 -- format 표를 보고 찾아서 ( 오라클 pdf p70-71)
-select sysdate, to_char(sysdate, 'YYYY') || '년' as yyyy,
-to_char(sysdate, 'YEAR') || '년' as yyyy,
-to_char(sysdate, 'MM'),
-to_char(sysdate, 'DD'),
-to_char(sysdate, 'DAY')
+select sysdate , to_char(sysdate,'YYYY') || '년' as yyyy ,
+to_char(sysdate,'YEAR') || '년' as yyyy ,
+to_char(sysdate,'MM') ,
+to_char(sysdate,'DD'),
+to_char(sysdate,'DAY') 
 from emp;
+
+
 
 -- 입사일이 12월인 사원의 사번 , 이름 , 입사일 ,입사년도 , 입사월 출력
 --select *
@@ -911,6 +918,7 @@ from emp;
 -- 기본 select (select from where order by)
 -- 문자열 함수 > 숫자함수 > 날짜함수 > 변환함수( 이쁘게 출력하기) to_char
 
+/*
 
 create table M (M1 char(6) , M2 char(10));
 create table S (S1 char(6) , S2 char(10));

@@ -1,7 +1,5 @@
 show user;
-SELECT *
-FROM emp
-WHERE REGEXP_LIKE(EMPNO, '^7900$|^79[0-9]{2}$|^8000$');
+
 --USER이(가) "KOSA"입니다.
 /*
 RDBMS (Relational Database Management System) 정의
@@ -616,8 +614,8 @@ insert into ut(name) values('CCC');
 commit;
 조인
 */
+select * from ut;
 select * from uta;
-select * form ut;
 /*
 AAA
 BBB

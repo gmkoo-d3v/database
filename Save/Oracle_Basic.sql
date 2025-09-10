@@ -364,3 +364,514 @@ NLS_DATE_LANGUAGE	KOREAN
 select *
 from emp
 where sal >= 2000 and sal <= 4000;
+
+select *
+from emp
+where sal between 2000 and 4000; --단점 무조건 = 을 포함
+
+
+ --사원의 급여가 2000달러 초과이면서 4000미만인 사원의 모든 정보를 출력하세요
+select *
+from emp
+where sal > 2000 and sal < 4000;
+
+--부서번호가 10번 또는 20번 또는 30번인 사원의 사번 , 이름 , 급여 , 부서번호 출력
+select *
+from emp
+where deptno=10 or deptno=20 or deptno=30;
+--IN 연산자
+select *
+from emp
+where deptno in (10,20,30); --mybatis 동적쿼리 ...
+
+--부서번호가 10번 또는 20번 아닌 사원의 사번 , 이름 , 급여 , 부서번호 출력
+select *
+from emp
+where deptno!=10 and deptno!=20;
+
+select *
+from emp
+where deptno  not in (10,20); --not in >> != and != 
+
+--문제
+--where deptno  not in (10,20); 풀어서 쓰세요
+--where deptno!=10 and deptno!=20;
+
+
+--Today Point
+--null
+--값이 없다
+--필요악
+--사용하는 문법
+--비교 : = null(x) ,  is null or in not null
+--함수 : nvl() , nvl2() 함수  (mysql : ifnull())
+
+create table member(
+    userid varchar2(20) not null, --필수입력
+    name varchar2(20) not null, --필수입력
+    hobby varchar2(50) --default null 허용
+);
+
+desc member;
+
+insert into member(userid, name, hobby)
+values('hong','길동','도둑');
+
+--나 이제 실반열 할거야
+commit;
+
+select * from member;
+/*
+DB 에 DML(insert , update , delete)
+insert , update , delete 작업수행 (transaction)
+트랙잭션의 정의 : 하나의 논리적인 작업단위
+은행업무
+A 계좌 인출 : update
+-> B계좌 이체 : update
+
+하나의 업무 (인체 -> 이체)
+begin tran
+    A계좌 인출(update)
+    B계좌 이체(update)
+end tran
+
+성공 : 실반영 : commit
+실패 : rollback 시작점으로 
+
+오라클은 
+default insert , update , delete 작업 트랙잰션 강제 수행
+완료: commit , rollback 강제
+
+Ms-sql
+update .. 실반영 (자동 auto-commit)
+begin tran 실행 (명시적)
+*/
+
+--수당(comm) 받지 않는 모든 사원의 정보 출력 (comm 데이터 null)
+select *
+from emp
+where comm = null; --문법이 (x)
+
+select * 
+from emp
+where comm is null;
+
+--수당을 받는 사람
+select *
+from emp
+where comm is not null;
+
+--사원테이블에서 사번 , 이름 , 급여 , 수당 ,총급여(급여+수당) 을 출력
+select empno , ename , sal ,comm , sal+comm as "총급여"
+from emp;
+/*
+null 이란 녀석 
+1. null 과의 모든 연산결과는 null > null + 100 > null
+2. null 값을 처리하기 위한 함수 : nvl(), nvl2()
+
+nvl(컬럼명,대체값)
+*/
+select empno , ename , sal ,comm , 
+       sal+nvl(comm,0) as "총급여"
+from emp;
+
+--샘플
+select 1000 + null from dual;
+select 1000 + nvl(null,0) from dual;
+select 1000 + nvl(null,111111) from dual;
+select nvl(null,'hello world') from dual;
+
+--사원의 급여가 1000이상이고 수당을 받지 않는 사원의 사번 , 이름 , 직종 ,급여 ,수당
+--총급여(급여+수당) 를 출력하세요
+select empno , ename , job , sal, comm , sal+nvl(comm,0) as "총급여"
+from emp
+where sal >= 1000 and comm is null;
+
+--문자열 검색 
+--주소검색 >> 역삼 >> 역삼이라는 단어가 포함된 모든 주소
+--LIKE 문자열 패턴 검색
+--와일드 카드 (% 모든 것 , _  한문자)
+--부족 : 정규표현
+select *
+from emp
+where ename like '%A%'; --모든 이름 A 가 포함되면 ...
+
+select *
+from emp
+where ename like 'A%';--A로 시작하는 
+
+-- ename like '김%'
+select *
+from emp
+where ename like '%E';
+
+
+select *
+from emp
+where ename like '%LL%'; --ALLEN    MILLER
+
+select *
+from emp
+where ename like '%A%A%'; --A가 두개 있으면  ADAMS
+
+select *
+from emp
+where ename like '_A%';  -- _한문자 WARD   MARTIN  JAMES
+
+--정규표현식 : regexp like()
+--regexp_like(ename,'[A-C]'); 사례 5개를 만들어 올리세요
+select * from emp where regexp_like(ename,'[A-C]');
+
+----------------------------------------------------------
+--데이처 정렬하기
+--order by 컬럼명 : 문자열 , 숫자 , 날짜 정렬가능
+--오름차순 : asc 낮은순 : default
+--내림차순 : desc 높은순
+--정렬 서버입장에서 cost 비용 많이 들어요
+
+select *
+from emp
+order by sal;  --default asc
+
+select *
+from emp
+order by sal asc; 
+
+select *
+from emp
+order by sal desc; 
+
+--입사일이 가장 늦은 순으로 정려해서 사번 , 이름 , 급여 , 입사일 출력하세요
+--가장 최근에 입사한 순으로 
+select empno , ename , sal , hiredate
+from emp
+order by hiredate desc;
+/*
+select 절   3
+from 절     1
+where 절    2
+order by 절 4  (select 한 결과를 정렬)
+*/
+
+select empno, ename , sal , job , hiredate
+from emp
+where job='MANAGER'
+order by hiredate desc;
+
+select job ,deptno
+from emp
+order by job asc , deptno desc;
+--job 정렬 그안에서 group detpno 정렬
+
+--연산자 
+--합집합(union)     : 테이블과 테이블의 데이터 합치는 것(중복값 배제)
+--합집합(union all) : 테이블과 테이블의 데이터 합치는 것(중복값 허용)
+
+/*
+create table uta(name varchar2(20));
+insert into uta(name) values('AAA');
+insert into uta(name) values('BBB');
+insert into uta(name) values('CCC');
+insert into uta(name) values('DDD');
+commit
+
+create table ut(name varchar2(20));
+insert into ut(name) values('AAA');
+insert into ut(name) values('BBB');
+insert into ut(name) values('CCC');
+commit;
+*/
+
+select * from uta;
+select * from ut;
+
+/*
+AAA
+BBB
+CCC
+DDD
+
+AAA
+BBB
+CCC
+*/
+select * from ut
+union
+select * from uta; --중복데이터 제거
+
+
+select * from ut
+union all
+select * from uta; 
+
+--조건
+--union
+--1. [대응]대는 [컬럼]의 [타입]이 동일
+
+select empno , ename from emp
+union
+select dname , deptno from dept;
+--ORA-01790: expression must have same datatype as corresponding expression
+
+select empno , ename from emp
+union
+select deptno , dname from dept;
+
+--subquery >> 가상테이블
+select *
+from (
+        select empno , ename from emp
+        union
+        select deptno , dname from dept
+      ) m
+order by m.empno desc; 
+
+--2. [대응]대는 [컬럼]의 [개수]가 동일
+
+select empno , ename , job , sal from emp
+union 
+select deptno , dname , loc , null from dept;
+--ORA-01789: query block has incorrect number of result columns
+
+select empno , ename , job , sal from emp
+union 
+select deptno , dname , loc , 10 from dept;
+------------------------------------------------------------
+--자바에서 제어문 끝난 느낌
+--초급 개발자가 단일 테이블 대상으로 쿼리문을 작성가능하다
+------------------------------------------------------------
+--함수 
+--오라클 PDF 48page 단일행 함수 
+/*
+1.2.2 단일 행 함수의 종류 
+1) 문자형 함수 : 문자를 입력 받고 문자와 숫자 값 모두를 RETURN할 수 있다. 
+2) 숫자형 함수 : 숫자를 입력 받고 숫자를 RETURN한다. 
+3) 날짜형 함수 : 날짜형에 대해 수행하고 숫자를 RETURN 하는 MONTHS_BETWEEN 함수를 
+제외하고 모두 날짜 데이터형의 값을 RETURN한다. 
+4) 변환형 함수 : 어떤 데이터형의 값을 다른 데이터형으로 변환한다. 
+5) 일반적인 함수 : NVL, DECODE
+*/
+
+select initcap('the super man') from dual; --The Super Man
+
+select lower('AAA') , upper('aaa') from dual;
+
+select ename , lower(ename) as "ename" from emp;
+
+select *
+from emp
+where lower(ename)= 'king';
+
+select length('abcd') from dual;
+
+select concat('a','b') from dual;
+
+select 'a'|| 'b' || 'c' from dual;
+
+select concat(ename,job) from emp;
+
+--JAVA : substring
+--Oracle: substr
+
+select substr('ABCDE',2,3) from dual; --BCD
+select substr('ABCDE',1,1) from dual; --A
+select substr('ABCDE',3,1) from dual;  --C
+
+select substr('ABCDdsfgsdfsdfdsfdsfasdf',3) from dual;
+
+/*
+사원테이블에서 ename 컬럼의 데이터에 대해서 첫글자는 소문자로 나머지 글자는 대문자로 
+출력하되 하나의 컬럼으로 만들어 출력하고 컬럼의 별칭 fullname  하고 첫글자와 나머지
+문자사이에는 공백하나를 넣어서 출력
+단 위에서 배운 함수만 사용
+오라클 함수는 체인이 없어요
+((()))
+*/
+select lower(substr(ename,1,1)) from emp;
+select substr(ename,2) from emp;
+select substr(ename,2,length(ename)) from emp;
+
+select lower(substr(ename,1,1)) || ' ' || upper(substr(ename,2,length(ename)))
+as fullname
+from emp;
+
+select lpad('ABC',10,'*') from dual;
+select rpad('ABC',10,'*') from dual;
+select rpad('ABC',10,'&') from dual;
+
+--사용자비번 hong1004 또는 k123
+--화면에 출력하는데 앞에 2글자만 보여주고 나머지는 특수문자 처리
+
+select rpad(substr('hong1004',1,2),length('hong1004'),'*') from dual;
+select rpad(substr('k123',1,2),length('k123'),'*') from dual;
+
+--emp 테이블에 적용하면 
+
+select rpad(substr(ename,1,2),length(ename),'*') from emp;
+
+select rtrim('MILLER','ER') from dual;
+select ltrim('MILLLLLLLLLLLLER','MIL') from dual;
+
+select '>' || rtrim('MILLER     ',' ') || '<' from dual;
+
+--치환함수
+select ename , replace(ename,'A','와우') from emp;
+---------------------------------------------------------------
+--문자열 함수 end
+---------------------------------------------------------------
+--[숫자함수]
+--round(반올림 함수)
+--trunc(절삭함수)
+--mod() 나머지 구하는 함수
+--   -3 -2 -1 0 1 2 3
+select round(12.345,0) from dual; --정수부만 남겨라 12
+select round(12.567,0) from dual; --13
+select round(12.345,1) from dual;  --12.3
+select round(12.564,1) from dual;  --12.6
+select round(12.345,-1) from dual;  --10
+select round(15.345,-1) from dual;  --20 
+
+select round(15.345,-2) from dual;
+
+
+select trunc(12.345,0) from dual; --정수부만 남겨라 12
+select trunc(12.567,0) from dual; --12
+select trunc(12.345,1) from dual;  --12.3
+select trunc(12.564,1) from dual;  --12.5
+select trunc(12.345,-1) from dual;  --10
+select trunc(15.345,-1) from dual;  --10
+
+
+--나머지
+select 12/10 from dual;
+
+--나머지 함수
+select mod(12,10) from dual;
+
+select mod(0,0) from dual;
+----------------------------------------------------------
+--날짜함수 : 연산가능 
+select sysdate from dual;
+--POINT
+--1. Date + Number >> Date
+--2. Date - Number >> Date
+--3. Date - Date  >>  Number (일수)
+
+select sysdate + 100 from dual;
+select sysdate + 1000 from dual;
+select sysdate - 1000 from dual;
+
+select hiredate from emp;
+
+select months_between('2022-01-01','2020-01-01') from dual; --개월의 차
+
+select trunc(months_between(sysdate,'2020-01-01'),0) from dual;
+
+--초급 개발자의 실수
+--select .. where  hirdate = '2025..'
+select '2025-01-01' + 100  from dual; --ORA-01722: invalid number
+
+--답 함수를 사용해서 날짜 타입 변환 (조건 문자열이 형식 있어야 한다)
+select to_date('2025-01-01') + 100 from dual;
+
+/*
+사원테이블에서 사원들의 입사일에서 현재 날짜까지의 근속월수를 구하세요
+--사원이름 , 입사일 , 근속월수 출력
+--단 근속월수는 정수만 출력(반올림 하지 마세요)
+*/
+select ename , hiredate , trunc(months_between(sysdate ,hiredate),0)as 근속월수
+from emp;
+-------------------------------------------------------------------------
+--문자함수 , 숫자함수 , 날짜함수 기본 END
+--------------------------------------------------------------------------
+
+--변환함수
+--오라클 데이터베이스 데이터 유형 : 숫자 , 문자열 , 날짜
+
+--to_char() 숫자 -> 형식문자 (1000000 -> $100,000 >  format)
+--to_char() 날짜 -> 형시문자 ('2025-01-01' -> 2025년01월01일) > format
+
+--to_date() : 문자열(날짜 형식) -> 날짜
+--select to_date('2025-01-01') + 100  from dual;
+
+--to_number() : 문자열 형식 숫자 -> 숫자(자동 형변환)
+select '100' + 100 from dual; --암시적 형변환
+select to_number('100') + 100 from dual; --명시적 형변환
+
+--format 표를 보고 찿아서 (오라클 PDF 70 ~ 71)
+select sysdate , to_char(sysdate,'YYYY') || '년' as yyyy ,
+to_char(sysdate,'YEAR') || '년' as yyyy ,
+to_char(sysdate,'MM') ,
+to_char(sysdate,'DD'),
+to_char(sysdate,'DAY') 
+from emp;
+
+--입사일이 12월인 사원의 사번 , 이름 , 입사일 , 입사년도 , 입사월을 출력하세요
+select empno, ename , hiredate , to_char(hiredate,'YYYY') ,
+to_char(hiredate,'MM')
+from emp
+where to_char(hiredate,'MM')='12';
+
+---------------------------------------------------------------------------
+show user;
+--USER이(가) "HR"입니다.
+
+select * from employees;
+
+select employee_id , first_name , last_name , hire_date, salary
+from employees;
+
+
+select '>' || to_char(12345,'9999999999999999999') || '<' from dual;
+select '>' || ltrim(to_char(12345,'9999999999999999999')) || '<' from dual;
+select '>' || to_char(12345,'$999,999,999,999,999,999') || '<' from dual;
+
+select sal ,to_char(sal,'$999,999') as sal from emp;
+/*
+사원테이블(employees)에서 사원의 이름은 last_name , first_name 합쳐서 fullname 별칭 
+부여해서 출력하고 입사일은  YYYY-MM-DD 형식으로 출력하고 연봉(급여 *12)을 구하고 
+연봉의 10%(연봉 * 1.1)인상한 값을
+출력하고 그 결과는 1000단위 콤마 처리해서 출력하세요
+단 2005년 이후 입사자들만 출력하세요 그리고 연봉이 높은 순으로  출력하세요
+*/
+
+SELECT LAST_NAME || FIRST_NAME AS "FULLNAME", 
+       TO_CHAR(HIRE_DATE, 'YYYY-MM-DD') AS "입사일",
+       salary,
+       salary*12 as "연봉",
+       TO_CHAR((SALARY * 12) * 1.1, '$999,999,999') AS SAL
+FROM EMPLOYEES
+WHERE TO_CHAR(HIRE_DATE, 'YYYY') >= '2005'
+ORDER BY 연봉 DESC; --실행 순서있다면 select 한 컬럼명을 사용 
+
+
+
+/*
+EMPLOYEES 테이블을 이용하여 다음 조건에 만족하는 행을 검색하세요. 
+2005년이후에 입사한 사원 중에 부서번호가 있고, 급여가 5000~10000 사이인 사원을 검색합니다. 
+가) 테이블 : employees 
+나) 검색 : employee_id, last_name, hire_date, job_id, salary, department_id 
+다) 조건
+    ① 2005년 1월 1일 이후 입사한 사원
+    ② 부서번호가 NULL이 아닌 사원 
+    ③ 급여가 5,000보다 크거나 같고, 10,000 보다 작거나 같은 사원 
+    ④ 위의 조건을 모두 만족하는 행을 검색 
+라) 정렬: department_id 오름차순, salary 내림차순
+
+*/
+SELECT employee_id, last_name, hire_date, job_id, salary, department_id 
+FROM employees 
+WHERE hire_date > '2005/01/01' 
+       AND department_id IS NOT NULL 
+       AND salary BETWEEN 5000 AND 10000 
+ORDER BY department_id, salary DESC ; 
+
+---------------------------------------------------------------------------
+select 'A' as a , 10 as b , null as c , empno
+from emp;
+---------------------------------------------------------------------------
+--기본 select (select from where order by)
+--문자열 함수 > 숫자함수 > 날짜함수 > 변환함수(이쁘게) to_char() , to_date() , to_numer()
+---------------------------------------------------------------------------
+show user;
+--USER이(가) "KOSA"입니다.

@@ -868,6 +868,15 @@ show user; --kosa 에서 hr로 변경함 우측상단에
 -- USER이(가) "HR"입니다.
 select *  from employees;
 
+select employee_id , first_name , last_name , hire_date, salary
+from employees;
+
+
+select '>' || to_char(12345,'9999999999999999999') || '<' from dual;
+select '>' || ltrim(to_char(12345,'9999999999999999999')) || '<' from dual;
+select '>' || to_char(12345,'$999,999,999,999,999,999') || '<' from dual;
+
+select sal ,to_char(sal,'$999,999') as sal from emp;
 
 /*
 사원테이블(employees)에서 사원의 이름은 last_name , first_name 합쳐서 fullname 별칭 
@@ -907,7 +916,7 @@ FROM employees
 WHERE hire_date > '2005/01/01' 
        AND department_id IS NOT NULL 
        AND salary BETWEEN 5000 AND 10000 
-ORDER BY department_id, salary DESC ; 
+ORDER BY department_id ASC, salary DESC ; 
 
 이하 kosa로 다시 변경함
 ----------------------------------

@@ -1,0 +1,41 @@
+nvarchar2(20) -- unicode(2byte) 로 모든 글자를 2바이트로 간주 한글도 20자 들어간다.
+decode 는 오라클이 가지는 특수한 문법
+case 표준 구문 (권장) > pivot 함수
+
+문자열함수, 숫자함수 , 변환 to_format( to_char to_number to_date 등등 이쁘게 보일려고 formatting 하는것), 일반함수( nvl, decode, case)
+
+is not null
+is null 이런거 암기
+
+/*
+실행순서 
+4  select
+1  from
+2  where
+3  group by
+5  order by
+
+*/
+
+
+-- from 의 조건절 where
+-- group by 의 조건절 having (집계된 데이터 조건)
+
+
+단일 테이블 기준 실행 순서
+5   select
+1   from
+2   where
+3   group by
+4   having
+6   order by
+
+union 아래 붙임 
+join  옆에 붙임
+
+
+단일 데이터랑 쪼개져있는 데이터랑 속도비교하면 무조건 단일이 빠르다
+하지만 쪼갤수 있는건 다 쪼개야된다.
+이러면 관리가 편하다 하지만 셀렉트가 난리남
+정규화 = 셀렉트 파편화
+반정규화 = 쪼갠 테이블 합치기

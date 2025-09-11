@@ -173,6 +173,7 @@ INSERT INTO DEPT VALUES (40,'OPERATIONS','BOSTON');
 COMMIT;
 
 
+
 CREATE TABLE SALGRADE
 ( GRADE number,
 LOSAL number,
@@ -184,8 +185,6 @@ INSERT INTO SALGRADE VALUES (3,1401,2000);
 INSERT INTO SALGRADE VALUES (4,2001,3000);
 INSERT INTO SALGRADE VALUES (5,3001,9999);
 COMMIT;
-
-
 */
 
 select * from emp;
@@ -916,30 +915,26 @@ WHERE hire_date > '2005/01/01'
        AND department_id IS NOT NULL 
        AND salary BETWEEN 5000 AND 10000 
 ORDER BY department_id ASC, salary DESC ; 
------------------------------------ Sep 10 DB Day 1 end--------------------------------------------------------
------------------------------------ Sep 11 DB Day 2 start ----------------------------------------------------
---이하 kosa로 다시 변경함
+
+이하 kosa로 다시 변경함
 ----------------------------------
 
 select 'A' as a, 10 as b , null as c, empno
 from emp;
 ---------------------------------------------------------
 -- 기본 select (select from where order by)
--- 문자열 함수 > 숫자함수 > 날짜함수 > 변환함수( 이쁘게 출력하기) to_char() , to_date() , to_number()
----------------------------------------------------------------------------
+-- 문자열 함수 > 숫자함수 > 날짜함수 > 변환함수( 이쁘게 출력하기) to_char
 show user;
 /* USER이(가) "KOSA" 입니다.
--------------------------------------------------------------------------------
 SELECT USER FROM dual; 이게 오라클 공식 유저 확인 명령어 
 DB
 접속 :  deaver ->  Oracle Server - 
 dbeaver (드라이버)설치 > IP : 1521 > SID (xe) > 계정 , 비밀번호
 실무는 그냥 서버 원격 접속만하지 로컬아님 
 JAVA > Oracle 접속 역시 위와 동일한 방식으로 접속함
------------------------------------------------------------------------
+
 SQL 변수 제어문 개념 없다
 PL-SQL 변수 제어문 > 트리거 커서 프로시져 함수
-
 일반함수
 nvl () > null 을 처리하는 함수
 
@@ -950,52 +945,23 @@ case > java switch문
 
 상식
 
-OLTP : 네이버 , 카카오 (요기) 실시간 데이터 처리
+OLTP : 네이버 , 카카오
 OLAP : 분석
 
 
 */
 --일반함수
-select comm , nvl(comm,0) from emp;
+select comm, nvl(comm,0) from emp;
 
 create table temp01
 (
-    id number(6), -- 정수 자리
+    id number(6) -- 정수 자리
     job nvarchar2(20) -- unicode(2byte) 로 모든 글자를 2바이트로 간주 한글도 20자 들어간다.
 );
 
 desc temp01;
 
-/*
-insert into temp01(id,job) values(100,'IT');
-insert into temp01(id,job) values(200,'SALES');
-insert into temp01(id,job) values(300,'MANAGER');
-insert into temp01(id) values(400);
-insert into temp01(id,job) values(500,'MANAGER');
-commit;
-drop table temp01;
-*/
-select * from temp01;
-
-select id , decode(id,100,'아이티',
-                      200,'영업',
-                      300,'관리팀',
-                           '기타부서') as 부서이름
-from temp01;
-
-select * from temp01;
-
-select id, decode(nvl(id,0),100,'아이티',
-                            200,'영업',
-                            300,'관리팀',
-                                '기타부서') as 부서이름
-from temp01;
-
-
-
-
 select * from emp;
-
 select empno , ename, deptno , decode(deptno,10,'인사팀',
                                              20,'관리팀',
                                              30,'회계팀',
@@ -1010,7 +976,6 @@ from emp;
   navrchar2(10) 가변길이 문자열 한글10자, 영문자 10자
 */
 -- 주민번호같이 고정된거는 캐릭터 써라
-
 create table t_emp2(
     id number(2),
     jumin char(7) -- 고정길이 문자열
@@ -1022,7 +987,6 @@ insert into t_emp2(id, jumin) values(3,'3234567');
 insert into t_emp2(id, jumin) values(4,'4234567');
 insert into t_emp2(id, jumin) values(5,'5234567');
 commit;
-drop table t_emp2;
 */
 select * from t_emp2;
 /*
@@ -1036,6 +1000,23 @@ select id, decode(substr(jumin,1,1), 1,'남성',
                                      '기타') as 성별
 from t_emp2;
 
+
+/*
+insert into temp01(id,job) values(100, 'IT');
+insert into temp01(id,job) values(200, 'SALSES');
+insert into temp01(id,job) values(300, 'MANAGER');
+insert into temp01(id) values(400);
+insert into temp01(id,job) values(500, 'MANAGER');
+commit;
+*/
+
+select * from temp01;
+
+select id, decode(nvl(id,0),100,'아이티',
+                  200,'영업',
+                  300,'관리팀',
+                  '기타부서') as 부서이름
+from temp01;
 
 /*
 응용문제 : hint if문 안에 if문
@@ -1097,10 +1078,8 @@ from emp;
 /*
 decode 는 오라클이 가지는 특수한 문법
 case 표준 구문 (권장) > pivot 함수
----------------------------------------------------------------------
+
 문자열함수, 숫자함수 , 변환 to_format( to_char to_number to_date 등등 이쁘게 보일려고 formatting 하는것), 일반함수( nvl, decode, case)
----------------------------------------------------------------------
-nvl , to_char , case
 
 [집계함수]
 오라클.pdf p.76 pdf내에선 68
@@ -1119,14 +1098,9 @@ nvl , to_char , case
 
 */
 select count(*) from emp; -- row 수 체크 14건
-
 select count(empno) from emp; -- 데이터 건수 14개
-
-select count(comm) from emp; -- 6 집계함수는 null을 보지않기에
-
+select count(comm) from emp; -- 6 집계함수는 null을 보지않기에 
 select comm from emp;
-select * from emp;
-
 select count(nvl(comm,0)) from emp; -- 14
 
 --급여의 합
@@ -1134,10 +1108,8 @@ select sum(sal) from emp;-- 29025
 select avg(sal) from emp; -- 2073.214285714285714285714285714285714286
 select trunc(avg(sal),0) from emp; --2073
 
-
 --사장 우리회사 총 수당
 select sum(comm) from emp; --4330
-
 select comm from emp;
 --3500
 --0
@@ -1145,7 +1117,6 @@ select comm from emp;
 --200
 --30
 --300
---3500
 select (30+300+200+300+0+3500) / 6 from dual; -- 오라클은 출력기능없어서 가상으로 담는것
 -- 721.66666 나옴
 select (30+300+200+300+0+3500)  from dual; -- 4330 null을 빼고 하는것
@@ -1168,16 +1139,11 @@ select min(sal) from emp;
 select sum(sal), avg(sal), max(sal), min(sal), count(*), count(sal)
 from emp;
 
--- select empno , count(empno) 
--- from emp;
--- ORA-00937: not a single-group group function
+-- select empno , count(empno) from emp; -- ORA-00937: not a single-group group function
 -- 사원별로 묶겠다는 의도지만 group by 안해서 작동안함
 
 -- 부서별 평균 급여를 구하세요.
-
--- select deptno , avg(sal) from emp; 
---depno는 여러건이고 avg(sal)은 한건 그럼 avg(sal)을 어디다 배치할껀데 그래서 에러
-
+-- select deptno , avg(sal) from emp; --depno는 여러건이고 avg(sal)은 한건 그럼 avg(sal)을 어디다 배치할껀데 그래서 에러
 select deptno, trunc(avg(sal),0)
 from emp
 group by deptno;
@@ -1295,559 +1261,4 @@ where job != 'SALESMAN'
 group by job
 having sum(sal) >5000
 order by 급여 asc;
-
-
-
-
-​
-/*
-HR
-
-select user from dual;
-show user;
-select * from employees;
-
-2. EMPLOYEES 테이블을 이용하여 다음 조건에 만족하는 행을 검색하세요. 
-부서번호가 있고, 부서별 근무 인원수가 2명 이상인 행을 검색하여 
-부서별 최대 급여와 최소 급여를 계산하고 그 차이를 검색합니다. 
-가) 테이블 : employees 
-나) 검색 : department_id, MAX(salary), MIN(salary), difference 
-        - MAX(salary) 와 MIN(salary)의 차이를 DIFFERENCE로 검색 
-다) 조건
-    ① 부서번호가 NULL이 아닌 사원 
-    ② 부서별 근무 인원수가 2명 이상인 집합 
-라) 그룹 : 부서번호가 같은 행
-마) 정렬 : department_id 
-문제 풀어 보세요
-*/
-
-SELECT department_id, MAX(salary), 
-      MIN(salary) ,MAX(salary) - MIN(salary) AS difference 
-FROM employees 
-WHERE department_id IS NOT NULL 
-GROUP BY department_id 
-HAVING COUNT(*) >= 2 
-ORDER BY department_id ;
--- kosa 전환
-------------------------------------------------------------------------
---단일 테이블 END--
---select from where group by  having order by
--------------------------------------------------------------------------
-/*
-JAVA 
-class Member (private int empno , prevate String ename)
-
-DB
-create table Member (empno number ,enmae varchar2(20))
-
-java 1건
-Member member = new Member(2000, "홍길동");
-
-db 1건 
-insert into member(empno, ename) values(2000, '홍길동');
-
-다수의 데이터 1건 이상의 데이터
-
-db 
-select * from emp where deptno =10
-
-Java
-List<Member> list = new ArrayList();
-list.add(new Member())
-list.add(new Member())
-
-db 
-select * from emp where deptno =7788
-
-java
-Member memeber = new Member();
-*/
-
-------------------------------------------------------------------
---여러개의 테이블에서 원하는 데이터 가져오기
---신입 개발자 (JOIN)
---다중 테이블로부터 데이터 검색  오라클.pdf  85page 실제 p.78
-/*
-1. Cartesian Product 모든 가능한 행들의 Join 
-2. Equijoin Join 조건이 정확히 일치하는 경우 사용(일반적으로PK와 FK사용) 
-3. Non-Equijoin Join 조건이 정확히 일치하지 않는 경우에 사용(등급,학점) 
-4. Outer Join Join 조건이 정확히 일치하지 않는 경우에도 모든 행들을 출력 
-5. Self Join 하나의 테이블에서 행들을 Join하고자 할 경우에 사용 
-6. Set Operators 여러 개의 SELECT문장을 연결하여 작성한다.
-*/
-
-/*
-create table M (M1 char(6) , M2 char(10));
-create table S (S1 char(6) , S2 char(10));
-create table X (X1 char(6) , X2 char(10));
-
-insert into M values('A','1');
-insert into M values('B','1');
-insert into M values('C','3');
-insert into M values(null,'3');
-commit;
-
-insert into S values('A','X');
-insert into S values('B','Y');
-insert into S values(null,'Z');
-commit;
-
-insert into X values('A','DATA');
-commit;
-*/
-
-select * from m;
-select * from s;
-select * from x;
-
-/*
-1. 등가조인(euqi join)
-> 원테이블과 대응대는 테이블에 있는 컬럼의 데이터 1:1 매핑
-> 오라클 문법 vs sql 안시문법(ANSI)
-ansi가 표준임
-*/
-select *
-from m , s 
-where m.m1 = s.s1;
--- m과 s에서 m1 s1이 같다면 다가져와
-select m.m1 , m.m2, s.s2
-from m , s 
-where m.m1 = s.s1;
-
---ANSI 문법 오라클 문법이 가독성이 떨어져서 안시가 표준이기도하고 좋다.
-select m.m1 , m.m2, s.s2
-from m join s --inner join
-on m.m1 = s.s1;
-
-select * from emp;
-
--- 사원번호, 사원이름, 부서번호, 부서이름을 출력하세요.
-select * from emp;
-select * from dept;
-
--- selct * 로 전부다 찍어버리는게 조인에서는 편하다
-select *
-from emp join dept
-on emp.deptno = dept.deptno;
-
-select emp.empno , emp.ename, emp.deptno , dept.dname
-from emp join dept
-on emp.deptno = dept.deptno;
-
-
--- 현업 ( 테이블에 가명칭을 줘서 그걸로 접근)
-select e.empno , e.ename, e.deptno , d.dname
-from emp e join dept d
-on e.deptno = d.deptno;
-
--- join select * 하고 ... 실행다음 .. 칼럼을 골라서 사용
-
-select s.s1 , s.s2 ,x.x2
-from s join x
-on s.s1 = x.x1;
-
--- 테이블 3개 , 4개
--- oracle 문법
-select *
-from m, s, x
-where m.m1 = s.s1 and s.s1 = x.x1;
--- ansi 문법
-select *
-from m join s on m.m1 = s.s1
-       join x on s.s1 = x.x1;
-      
-select m.m1 , m.m2 , s.s2 , x.x2
-from m join s on m.m1 = s.s1
-       join x on s.s1 = x.x1;
-       
-----------------------------------------------------
---hr
-select user from dual;
-select * from employees;
-select * from departments;
-select * from locations;
-
-select count(*) from employees; --107 사원
-
--- 사번 , 이름 (last_name) , 부서번호, 부서이름을 출력
-select *
-from employees e join departments d
-on e.department_id = d.department_id;
-
-select e.employee_id , e.last_name , e.department_id , d.department_name
-from employees e join departments d
-on e.department_id = d.department_id; --106건
---원인
--- 178	Kimberely	Grant 가 department_id 가 null
-select * from employees where department_id is null;
-
--- 사번 , 이름 , 부서번호, 부서이름 , 지역코드 , 도시명을 출력
--- 일단 테이블 3개 조인
-
-select *
-from employees e join departments d on e.department_id = d.department_id
-                 join locations l on d.location_id = l.location_id;
-
--- 등가 조인 컬럼과 컬럼이 같다 equijoin (컬럼과컬럼이 같다)
-
-select e.employee_id, d.DEPARTMENT_NAME
-from employees e join departments d on e.department_id = d.department_id
-                 join locations l on d.location_id = l.location_id;
-                 
--- Non-Equi join(비등가 조인) 1:1 매핑되는 컬럼이 없다
--- 비등가 문법 (X) >> 등가조인
--- 개념만 존재
-
--- kosa 계정
-select user from dual;
-select * from emp;
-select * from salgrade;
-
---1	700	    1200
---2	1201	1400
---3	1401	2000
---4	2001	3000
---5	3001	9999
--- sal 이 1250dls martin 의 등급은 2등급
-select *
-from emp e join salgrade s
-on e.sal between s.losal and s.hisal;
-
-select e.empno , e.ename , e.sal , s.grade 
-from emp e join salgrade s
-on e.sal between s.losal and s.hisal;
-
--- outer join ( equi 조인 선행되고 > 남아있는 데이터를 가져오는 방법
--- 주종관계 (주인이되는 쪽에 남아 있는 데이터를 가져오는 방법)
--- 1. left outer join
--- 2. right outer join
--- 3. full outer join(left, right 를 union 한것)
-
---equi 선행되고 남는 쪽의 데이터
-select *
-from m left outer join s
--- m 이 주인
-on m.m1 = s.s1;
--- 등가조인하고 누가 메인인지 확인하고 남는것 가져옴 그리고 빈곳은 다 null
-
-select *
-from m right outer join s
-on m.m1 = s.s1;
-
-select *
-from m full outer join s
-on m.m1 = s.s1;
-------------------------------------------
--- hr로 이동
-
-select count(*) from employees; --107 사원
--- null 있어서 join 만족안하는 사원
-select * from employees where department_id is null;
---사번 , 이름 (last_name) , 부서번호 , 부서이름을 출력하세요
-select e.employee_id , e.last_name , e.department_id , d.department_name
-from employees e join departments d
-on e.department_id = d.department_id;  --106건
-
-
---아래 쿼리가 Kimberely 포함한 107건
-
-select e.employee_id , e.last_name , e.department_id , d.department_name
-from employees e left outer join departments d
-on e.department_id = d.department_id; 
--- 널로 빠졌으니 employees 주로해서 left outer join 하면 107건됨
---null 데이터를 항상 확인하자
-
-
--------------------------------------------------------
--- kosa 계정으로 이동
--- self join
--- 자기참조 (문법 x) -> 의미만 존재 -> 등가조인
--- 하나의 테이블에서 특정 컬럼이 자신의 테이블에 있는 특정 컬럼을 참조하는 경우를 
--- 셀프 조인이라고 한다.
-
--- 사원 테이블, 관리자테이블
--- 관리자도 사원중에 한명 > 중복된 데이터 > 무결성의 문제
--- 포인트 : 테이블에 가명칭 ... 하나의 테이블을 여러개로 사용가능
-select * from emp; --14명
-
-select *
-from emp e join emp m  -- 가상테이블해서 같은걸 2번 메모리에 올린셈
-on e.mgr = m.empno; -- 문제는 13명만 나옴
-
---14명
-select count(*) from emp where mgr is null;
-select *from emp;
-
-select e.empno, e.ename, m.empno, m.ename
-from emp e join  emp m  -- 가상테이블해서 같은걸 2번 메모리에 올린셈
-on e.mgr = m.empno; --13 명만 나옴
-------------------------------------------------------------
-select e.empno, e.ename, m.empno, m.ename
-from emp e left outer join  emp m  -- 가상테이블해서 같은걸 2번 메모리에 올린셈
-on e.mgr = m.empno; --14명 나옴
-
---------------------------------------
-select * from emp , dept; -- 조건이 없어요 
-select * from emp cross join dept; -- 56 개 나옴 카테시안의 곱. 조합가능한 모든수를 곱한거 행 * 행임
-
--- 14건 * 4 >> 56
-------------------------------------------------
--- ETC
--- NATURAL JOIN  이름이 같은건 무조건 조인거는 방식임
--- equi join과 동일한 역활
--- 두테이블 [동일한 이름]을 가는 [컬럼은 모두 조인]
-
-select empno , ename , deptno , dname
-from emp natural join dept; -- 이름이 같은건 무조건 조인거는 방식임
-
--- join ~using
--- natural join 단점은 동일한 이름을 가지는 컬럼은 모두 조인을 걸어버림
--- using문을 사용하면 컬럼을 선택해서 조인
-
-select empno , ename , deptno , dname
-from emp join dept using(deptno); -- 14개 on절 빠짐
-
-------------------------------------------------------------------
---KOSA 계정에서 하세요
---JOIN 시험
---emp , dept , salgrade
-
--- 1. 사원들의 이름, 부서번호, 부서이름을 출력하라.
-
-
-SELECT E.ENAME, E.DEPTNO, D.DNAME
-FROM EMP E  join DEPT D on E.DEPTNO=D.DEPTNO;
-
--- 2. DALLAS에서 근무하는 사원의 이름, 직위, 부서번호, 부서이름을
--- 출력하라.
-
-
-
-SELECT E.ENAME, E.JOB, D.DEPTNO, D.DNAME
-FROM EMP E  join DEPT D on E.DEPTNO=D.DEPTNO
-WHERE  D.LOC='DALLAS';
-​
-
--- 3. 이름에 'A'가 들어가는 사원들의 이름과 부서이름을 출력하라.
-
-
-
-SELECT E.ENAME, D.DNAME
-FROM EMP E  join DEPT D  on D.DEPTNO=E.DEPTNO
-WHERE  E.ENAME LIKE '%A%';
-
-
--- 4. 사원이름과 그 사원이 속한 부서의 부서명, 그리고 월급을
---출력하는데 월급이 3000이상인 사원을 출력하라.
-
-
-
-SELECT E.ENAME, D.DNAME, E.SAL 
-FROM EMP E  join DEPT D on E.DEPTNO=D.DEPTNO
-WHERE E.SAL>=3000;
-
--- 5. 직위(직종)가 'SALESMAN'인 사원들의 직위와 그 사원이름, 그리고
--- 그 사원이 속한 부서 이름을 출력하라.
-
-
-
-SELECT E.JOB, E.ENAME, D.DNAME
-FROM EMP E  join DEPT D on E.DEPTNO=D.DEPTNO
-WHERE E.JOB='SALESMAN';
-​
-
--- 6. 커미션이 책정된 사원들의 사원번호, 이름, 연봉, 연봉+커미션,
--- 급여등급을 출력하되, 각각의 컬럼명을 '사원번호', '사원이름',
--- '연봉','실급여', '급여등급'으로 하여 출력하라.
---(비등가 ) 1 : 1 매핑 대는 컬럼이 없다
-
-
-
-
-SELECT         E.EMPNO AS "사원번호",
-               E.ENAME AS "사원이름",
-               E.SAL*12 AS "연봉",
-               --E.SAL*12+NVL(COMM,0) AS "실급여",
-               E.SAL*12+COMM AS "실급여",
-               S.GRADE AS "급여등급"
-FROM EMP E  join SALGRADE S on E.SAL BETWEEN S.LOSAL AND S.HISAL
-WHERE E.Comm is not null;
-
--- 7. 부서번호가 10번인 사원들의 부서번호, 부서이름, 사원이름,
--- 월급, 급여등급을 출력하라.
--- inner 는 생략 가능
-
-
-SELECT E.DEPTNO, D.DNAME, E.ENAME, E.SAL, S.GRADE
-FROM EMP E  join DEPT D on E.DEPTNO=D.DEPTNO
-            join SALGRADE S on E.SAL BETWEEN S.LOSAL AND S.HISAL
-WHERE E.DEPTNO=10;
- 
-SELECT * FROM SALGRADE;
-
--- 8. 부서번호가 10번, 20번인 사원들의 부서번호, 부서이름,
--- 사원이름, 월급, 급여등급을 출력하라. 그리고 그 출력된
--- 결과물을 부서번호가 낮은 순으로, 월급이 높은 순으로
--- 정렬하라.
--- inner 는 생략 가능
-
-
-SELECT E.DEPTNO, D.DNAME, E.ENAME, E.SAL, S.GRADE
-FROM EMP E  join DEPT D        on E.DEPTNO=D.DEPTNO
-            join SALGRADE S    on E.SAL BETWEEN S.LOSAL AND S.HISAL
--- WHERE  E.DEPTNO<=20 당장은 맞으나 다른값 들어오면 틀어짐
-WHERE E.DEPTNO IN (10,20)  -- e.deptno = 10 or 
-ORDER BY E.DEPTNO ASC,  E.SAL DESC;
-
--- 9. 사원번호와 사원이름, 그리고 그 사원을 관리하는 관리자의
--- 사원번호와 사원이름을 출력하되 각각의 컬럼명을 '사원번호',
--- '사원이름', '관리자번호', '관리자이름'으로 하여 출력하라.
---SELF JOIN (자기 자신테이블의 컬럼을 참조 하는 경우)
-
-SELECT E.EMPNO as "사원번호", E.ENAME as "사원이름" , M.EMPNO as "관리자번호", M.ENAME as "관리자이름"
-FROM EMP E  left outer join EMP M
-on e.MGR = m.EMPNO;
-
---------------------------------------------------------
---subquery (SQL 꽃 ... 만능해결사)
-
--- 함수 > 단일 테이블
--- 다중 테이블 ( join, union) 
--- 해결안되요 원하는 데이터를 가진 테이블이 없다.
--- 가상  테이블 > subquery ( in line view)
-
--- 사원테이블에서 사원들의 평균 월급보다 더 많은 월급을 받는 사원의 사번, 이름 , 급여 출력
-
--- 1. 평균 월급
-select avg(sal) from emp; --2073.214
-
-select *
-from emp
-where sal > 2073;
-
--- 쿼리 두개 쓴것임 게다가 첫 쿼리값 기억해서 하는거
--- 쿼리 통합해보자
-select *
-from emp
-where sal > (select avg(sal) from emp);
--- 서브쿼리 쿼리안에 쿼리가 들어갔다.
-
-/*
-스칼라 서브쿼리 : select 절 : 단일컬럼 , 단일행을 반환 (1개의 값)
-인라인 뷰      : from   절 : view 처럼 임시테이블 (가상테이블) .....
-중첩 서브쿼리   : where  절 : 다중 컬럼 또는 다중의 행을 반환
-*/
-
-/*
-1. single row subquery : 실행 결과가 단일컬럼에 단일로우 (한개의 값) 
-ex) select sum(sal) , avg(sal), max(sal)
-연산자 : = , != , < , >
-
-서로 연산자가 다르기 때문에 구분한다.
-2. multi row subquery  : 실행 결과가 단일컬럼에 그 값이 여러개
-ex) select deptno from dept; 4건
-연산자 : IN , NOT IN , ANY , ALL
-ALL : sal > 1000 and sal > 4000 and   :   즉 모든것을 만족해라 
-ANY : sal > 1000 or sal > 4000 or     :   즉 어떤것이 와도 ok
-ALL (모든 것을 만족)    : sal > 1000 and sal > 4000 and
-ANY (어떤 것이 와도 OK) : sal > 1000 or sal > 4000 or
-
-문법) 
-    1. 괄호안에 있어야 한다. (쿼리문)
-    2. 단일 컬럼을 가져야한다 ( 멀티컬럼을 쓰면 유추하기 힘들어짐)
-        select max(sal), min(sal) from emp 이러면 나중에 헷갈림 쓰지말자
-    3. 서브쿼리는 단독 실행 가능
-    
-    실행순서 : 서브쿼리가 먼저 실행되고 그 결과를 가지고 메인(주)쿼리가 실행된다
-*/
-
---사원테이블에서 jones 의 급여보다 더 많은 급여를 받는 사원의 사번, 이름, 급여를 출력하세요.
-
-
-select sal from emp where ename='JONES';
-
-select e.empno , e.ename, e.sal 
-from emp e
-where sal > 2975;
-
----------------- 합친것----------------
-select empno , ename, sal 
-from emp
-where sal > (select sal from emp where ename='JONES');
--- 일단 join 하다하다 안되면  이방식 또한 문장 2개로 한담에  합치는 방식이 직관적
- -------------------------------------
- 
--- 부서번호가 30번인 사원과 같은 급여를 받는 사원의 모든 정보를 출력하세요
-select sal from emp where deptno=30; -- multi row
--- 
--- select *
--- from emp
--- where sal = (select sal from emp where deptno=30);
--- ORA-01427: single-row subquery returns more than one row
-  
- select *
- from emp
- where sal in (select sal from emp where deptno=30);
--- where sal=1600 or sal = 1250 or sal = 3000 ;
-
--- 부하직원이 있는 사원의 사번과 이름을 출력하세요
--- 내 사번이 mgr 컬럼에 있으면 나는 최소 1명 이상의 부하직원을 가진다.
-select mgr from emp; -- 멀티로
-
-select *
-from emp
-where empno in (select mgr from emp);
-
--- 부하직원이 없는 사원의 모든 정보 출력
-
---select *
---from emp
---where empno not in(select mgr from emp);
--- where impno !=  7902 and empno != 7698 and null 널들가게되니 널된것
-
-
-select *
-from emp
-where empno not in(select nvl(mgr,0) from emp);
-
-
--- 20번 부서의 사원 중에서 가장 많은 월급을 받는 사원보다 더 많은 급여를 받는 
--- 사원의 사번, 이름, 급여, 부서번호 출력
-select max(sal) from emp where deptno=20;  --싱글로
-
-select empno , ename , sal
-from emp
-where sal > (select max(sal) from emp where deptno=20);
-
-
--------------------------------------------------------------
---스칼라 서브 쿼리  딱봐도 복잡하니 아래와 같이 조인문쓰는걸 권장
-select e.empno , e.ename , e.deptno , 
-       (select d.dname from dept d where d.deptno = e.deptno) as dept_name
-from emp e
---where e.sal >= 3000;
-
--- 위 와 같은 JOIN 으로 해결 ....
---아래와 같은 JOIN 을 사용해라 
-select *
-from emp e join dept d
-on e.deptno = d.deptno;
-
--- 두방식의 속도는 비슷하다고 한다 그러니 아래쪽으로 해라
-------------------------------------------------------------------------------
--- 자기 부서의 평균월급다 더 많은 월급을 받는 사원의 사번 , 이름 , 부서번호 , 부서별 평균월급을 출력하세요
--- 만약에 부서와 부서별 평균월급 담고 있는 테이블 제공
---in line view
-
-select e.empno,e.ename,e.deptno,e2.avf
-from emp e join
-            ( select deptno,avg(sal) as avf from emp group by deptno) e2
-on e2.deptno = e.deptno
-where e.sal > e2.avf;
-
-select e.empno , e.ename, e.deptno , e.sal , s.avgsal
-from emp e join 
-       (select deptno , trunc(avg(sal),0) as avgsal from emp group by deptno) s
-on e.deptno = s.deptno
-where e.sal > s.avgsal;
 

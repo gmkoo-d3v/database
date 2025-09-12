@@ -1643,6 +1643,159 @@ from emp e join
 on e.deptno = s.deptno
 where e.sal > s.avgsal;
 ----------------------------------------------------------------
+--KOSA 계정으로 실습문제 .......
+
+--1. 'SMITH'보다 월급을 많이 받는 사원들의 이름과 월급을 출력하라.
+SELECT ENAME, SAL
+FROM EMP
+WHERE SAL>(SELECT SAL
+           FROM EMP
+           WHERE ENAME='SMITH');
+ 
+--2. 10번 부서의 사원들과 같은 월급을 받는 사원들의 이름, 월급,
+-- 부서번호를 출력하라.
+SELECT ENAME, SAL, DEPTNO
+FROM EMP
+WHERE SAL IN(SELECT SAL
+             FROM EMP
+             WHERE DEPTNO=10);
+ 
+--3. 'BLAKE'와 같은 부서에 있는 사원들의 이름과 고용일을 뽑는데
+-- 'BLAKE'는 빼고 출력하라.
+SELECT ENAME, HIREDATE
+FROM EMP
+WHERE DEPTNO=(SELECT DEPTNO
+              FROM EMP
+              WHERE ENAME='BLAKE')
+AND ENAME!='BLAKE';
+ 
+--4. 평균급여보다 많은 급여를 받는 사원들의 사원번호, 이름, 월급을
+-- 출력하되, 월급이 높은 사람 순으로 출력하라.
+SELECT EMPNO, ENAME, SAL
+FROM EMP
+WHERE SAL>(SELECT  AVG(SAL)  FROM EMP)
+ORDER BY SAL DESC;
+ 
+--5. 이름에 'T'를 포함하고 있는 사원들과 같은 부서에서 근무하고
+-- 있는 사원의 사원번호와 이름을 출력하라.
+SELECT EMPNO, ENAME
+FROM EMP
+WHERE DEPTNO IN(SELECT DEPTNO
+                FROM EMP
+                WHERE ENAME LIKE '%T%');
+--where deptno = 20 or deptno= 30
+
+
+--6. 30번 부서에 있는 사원들 중에서 가장 많은 월급을 받는 사원보다
+-- 많은 월급을 받는 사원들의 이름, 부서번호, 월급을 출력하라.
+--(단, ALL(and) 또는 ANY(or) 연산자를 사용할 것)
+SELECT ENAME, DEPTNO, SAL
+FROM EMP
+WHERE SAL > (SELECT MAX(SAL)
+             FROM EMP
+             WHERE DEPTNO=30);
+ 
+SELECT ENAME, DEPTNO, SAL
+FROM EMP
+WHERE SAL > ALL(SELECT SAL
+                FROM EMP
+                WHERE DEPTNO=30)
+ 
+--where sal > 1600 and sal > 1250 
+--and sal > 2850 and sal > 1500 and sal > 950
+ 
+ 
+--7. 'DALLAS'에서 근무하고 있는 사원과 같은 부서에서 일하는 사원의
+-- 이름, 부서번호, 직업을 출력하라.
+SELECT ENAME, DEPTNO, JOB
+FROM EMP
+WHERE DEPTNO IN(SELECT DEPTNO    -- = 이 맞는데  IN
+                FROM DEPT
+                WHERE LOC='DALLAS');
+ 
+--8. SALES 부서에서 일하는 사원들의  같은 부서번호, 이름, 직업을 갖는 사원정보를 출력하라.
+SELECT DEPTNO, ENAME, JOB
+FROM EMP
+WHERE DEPTNO IN(SELECT DEPTNO
+                FROM DEPT
+                WHERE DNAME='SALES')
+ 
+
+ 
+--9. 'KING'에게 보고하는 모든 사원의 이름과 급여를 출력하라
+--king 이 사수인 사람 (mgr 데이터가 king 사번)
+SELECT ENAME, SAL
+FROM EMP
+WHERE MGR=(SELECT EMPNO
+           FROM EMP
+           WHERE ENAME='KING');
+ 
+--10. 자신의 급여가 평균 급여보다 많고, 이름에 'S'가 들어가는
+-- 사원과 동일한 부서에서 근무하는 모든 사원의 사원번호, 이름,
+-- 급여를 출력하라.
+SELECT EMPNO, ENAME, SAL
+FROM EMP
+WHERE SAL > (SELECT AVG(SAL)
+             FROM EMP)
+AND DEPTNO IN(SELECT DEPTNO
+              FROM EMP
+              WHERE ENAME LIKE '%S%');
+ 
+--select * from emp
+--where  deptno in  (
+--                      select deptno from emp where sal > (select avg(sal) from emp)
+--                      and ename like '%S%'
+--                   )
+ 
+--11. 커미션을 받는 사원과 부서번호, 월급이 같은 사원의
+-- 이름, 월급, 부서번호를 출력하라.
+SELECT ENAME, SAL, DEPTNO
+FROM EMP
+WHERE DEPTNO IN(SELECT DEPTNO
+                FROM EMP
+                WHERE COMM IS NOT NULL)
+AND SAL IN( SELECT SAL
+            FROM EMP
+            WHERE COMM IS NOT NULL);
+ 
+--12. 30번 부서 사원들과 월급과 커미션이 같지 않은
+-- 사원들의 이름, 월급, 커미션을 출력하라.
+SELECT ENAME, SAL, COMM
+FROM EMP
+WHERE SAL NOT IN(SELECT SAL
+                 FROM EMP
+                 WHERE DEPTNO=30)
+AND COMM NOT IN(SELECT NVL(COMM, 0)
+                FROM EMP
+                WHERE DEPTNO=30 and comm is not null);
+ 
+--SELECT NVL(COMM, 0)
+--FROM EMP
+--WHERE DEPTNO=30 and comm is not null;
+ 
+--SELECT COMM
+--FROM EMP
+--WHERE DEPTNO=30 and comm is not null;
+​
+-------------------------------------------------------------------------
+--기업에서 원하는 신입 DB역량
+/*
+select   5
+from     1
+where    2 
+group by 3
+having   4                   
+order by 6 
++
+기본함수(문자, 숫자 ,날짜 , 변환(to_) , 일반(decode,case) , 집계함수
++
+다중테이블 (JOIN, UNION)
++
+subquery
++
+DML(insert , update , delete)
+*/
+-------------------------------------------------------------------------------------
 --금요일
 --DDL 구문 과  제약(constraint)  그리고 DML(insert , update ,delete) 
 --진행하겠습니다^^
@@ -1650,5 +1803,565 @@ where e.sal > s.avgsal;
 --토요일은
 --개발자 필수 쿼리 와 분석함수 ...진행
 
+------------------------------------------------------------------------
+/*
+1 DDL (데이터 정의어) : create , alter , drop , + truncate , rename , modify
+2 DML (데이터 조작어) : insert , update , delete (트랜잭션 : commit , rollback)
+3 신입 취업 : select , insert ..점심 ... select(0) insert ,update , delete
+
+3.1 commit , rollback 수행하지 않았어요
+3.2 log write (기록) 
+    DML -> log write 선행 >  DISK 반영 > log 파일 full > write(x) > dml(x)
+    log back up > log 삭제
+
+4. DQL : select
+5. DCL : 제어 : 관리자 > grant ,revoke
+6. TCL : 트랜잭션 commit , rollback , savepoint
+
+*/
+
+--DML
+--1. insert
+select * from tab; --접속계정 KOSA 볼수 있는 테이블  목록
+
+select * from tab where tname='BOARD';
+select * from tab where tname='EMP';
+
+create table temp(
+  id number primary key , --not null , unique (회원ID ...)
+  name varchar2(20)
+ );
+ 
+ 1.1
+ insert into temp(id,name)
+ values(100,'홍길동');
+ 
+ select * from temp;
+
+--의사결정
+commit;
+--실반영
+
+--1.2 컬럼목록을 생략가능
+insert into temp
+values(200,'김유신');
+
+select * from temp;
+
+rollback;
+
+--1.3 문제 발생
+insert into temp(name)
+values('아무게');
+--ORA-01400: cannot insert NULL into ("KOSA"."TEMP"."ID")
+
+insert into temp(id,name)
+values(100,'개똥이');
+--ORA-00001: unique constraint (KOSA.SYS_C007002) violated
+
+insert into temp(id)
+values(200);
+
+select * from temp;
+
+commit;
+-----------------------------------------------------------------------
+
+--TIP
+--SQL 프로그래밍 적인 요소가 없어요 (변수, 제어문 불가능)
+--PL-SQL 변수 , 제어문 ..
+
+create table temp2(id varchar2(50));
+
+desc temp2;
+
+--PL-SQL
+--java : for(int i =0 ; i < 100 ;i++){}
+/*
+BEGIN
+    FOR i IN 1..100 LOOP
+        insert into temp2(id) values('A' || to_char(i));
+    END LOOP;
+END;
+*/
+select * from temp2;
+
+create table temp3(
+  memberid number(3) not null,
+  name varchar2(10), --default null
+  regdate date default sysdate --DB서버날짜
+);
+
+insert into temp3(memberid,name,regdate)
+values(100,'홍길동','2025-09-12');
+
+select * from temp3;
+
+commit;
+
+--날짜
+insert into temp3(memberid,name)
+values(200,'김유신');
+
+select * from temp3;
+
+commit;
+
+---------------------------------------------------------------
+create table temp4(id number);
+create table temp5(num number);
+
+insert into temp4(id) values(1);
+insert into temp4(id) values(2);
+insert into temp4(id) values(3);
+insert into temp4(id) values(4);
+insert into temp4(id) values(5);
+insert into temp4(id) values(6);
+insert into temp4(id) values(7);
+insert into temp4(id) values(8);
+insert into temp4(id) values(9);
+insert into temp4(id) values(10);
+commit;
+---------------------------------------------------------------
+--** 대량 데이터 삽입하기 
+--temp4 있는 모든 데이터 한번에 temp5 넣고 싶어요
+
+--insert into 테이블명(컬럼리스트) values..
+--insert into 테이블명(컬럼리스트) select 절
+
+insert into temp5(num)
+select id from temp4;
+
+select * from temp5;
+
+commit;
+
+--대량 데이터 삽입하기
+--데이터를 담을 테이블도 없고 >> 테이블 구조 복제(스키마) >> 데이터 삽입
+--단 제약정보는 복제 되지 않아요
+
+create table copyemp
+as
+    select empno ,ename ,job ,sal
+    from emp
+    where deptno=20;
+    
+    
+select * from copyemp;    
+-----------------------------------------------
+--1. insert ...values       > insert ...select절
+--2. create table  copyemp as select ....
+--퀴즈
+
+create table copyemp3
+as
+  select * from emp where 1=2;
+
+select * from copyemp3;
+------------[INSERT END]---------------------------------------------
+--update--
+/*
+
+update 테이블명
+set 컬럼명 = 값 , 컬럼명 = 값 ......
+where 조건절
+
+update 테이블명
+set 컬럼명 = (subquery) , 컬럼명 = 값 ......
+where (subquery)
+
+*/
+select * from copyemp;
+
+update copyemp
+set sal = 0;
+
+select * from copyemp;
+
+rollback;
+
+update copyemp
+set sal=1111
+where empno=7369;
+
+select * from copyemp;
+
+commit;
+
+update copyemp
+set sal = (select sum(sal) from emp);
+
+select * from copyemp;
+
+rollback;
+
+update copyemp
+set ename='AAA' , job='IT' , sal=1000
+where empno=7369;
+
+select * from copyemp
+where empno=7369;
+
+commit;
+---------------------------------------------------------------------
+--[UPDATE END]-------------------------------------------------------
+
+delete from copyemp;
+
+select * from copyemp;
+
+rollback;
+
+delete from copyemp
+where job = 'IT';
 
 
+select * from copyemp;
+
+commit;
+-----------------------------------------------------------------
+--DELETE END--
+/*
+개발자 (SQL)
+1. CRUD (creat>insert , read>select , update ,delete)
+2. APP(JAVA) -> 표준 JDBC API  -> DB 작업
+3. insert , update , delete , select (70%) : 함수,조인,서브쿼리...
+
+JAVA DB에 있는 EMP 테이블접근해서 대해서 조회, 수정 ,삭제 ...
+MVC 패턴
+Model : DTO(VO) , DAO , SERVICE  >> DAO(DB 연결, CRUD 함수 구현)
+View  : 1차 console > list.jsp ,list.html
+Controller : 중앙통제 JAVA 파일 웹 사용가능 > servlet (request, response)
+
+DAO 클래스
+기본적인 CRUD 함수 ....
+
+1. 전체조회 : public List<Emp> getEmpList(){} > select * from emp
+2. 조건조회 : public Emp getEmpListByEmpno(int empno){} > select * from emp where empno=7788
+3. 삽입    : public int insertEmp(Emp emp){} > insert into Emp(empno...) values(value...)
+4. 삭제    : public int deleteEmp(int empno){} > delete from emp where empno=7788
+5. 수정    : public int updateEmp(Emp emp){} > update emp set ename='aa'....
+
+JAVA  5개 함수를 만들수 있다
+DB    5개의 쿼리문을 만들수 있다
+*/
+
+--Tip
+select * from tab;
+
+select * from col where tname='EMP';
+select * from user_constraints where table_name='EMP'; 
+
+----------------------------------------------------------------------
+--DDL
+--가상컬럼(조합컬럼)
+--학생성적테이블
+--학번 , 국어 , 영어 , 수학 , 합계 , 평균
+--데이터 무결성 (조회) : 국어점수가 변경되면 >> 평균 , 합계 변화.... 무결성 보장
+
+create table vtab1(
+    no1 number,
+    no2 number,
+    no3 number GENERATED ALWAYS as (no1 + no2) VIRTUAL
+);
+
+insert into vtab1(no1, no2)
+values(100,50);
+
+select * from vtab1;
+
+/*        
+insert into vtab1(no1, no2,no3)
+values(100,50,50);  직접 넣을 수 없다
+*/
+
+update vtab1
+set no1=200;
+
+select * from vtab1;
+
+commit;
+-------------------------------------------------------------------
+--실무에서 사용하는 코드
+--제품 (입고) : 분기별 데이터 추출(1,2,3 1분기 ... 10,11,12 4분기)
+create table vtable2(
+  no number, --순번
+  p_code char(4), --제품코드 (A001 , B003)
+  p_date char(8), --입고일 (20250101 , 20251010)
+  p_qty  number, --수량
+  p_bungi number(1) GENERATED ALWAYS as (
+                    case when substr(p_date,5,2) in ('01','02','03') then 1
+                         when substr(p_date,5,2) in ('04','05','06') then 2
+                         when substr(p_date,5,2) in ('07','08','09') then 3
+                    else 4
+                    end
+                   ) VIRTUAL
+);
+
+insert into vtable2(p_date) values('20240101');
+insert into vtable2(p_date) values('20240501');
+insert into vtable2(p_date) values('20240601');
+insert into vtable2(p_date) values('20241201');
+commit;
+
+
+select * from vtable2 where p_bungi =1;
+----------------------------------------------------------------------
+--테이블 생성 수정 문법
+
+--1. 테이블 생성하기
+
+create table temp6(id number);
+desc temp6;
+
+--2. 테이블 생성 후에 컬럼 추가하기
+
+alter table temp6
+add ename varchar2(20);
+
+desc temp6;
+
+--3. 기존 테이블에 있는 컬럼이름 (ename-> username) > TOOL 사용 문제 없다
+alter table temp6
+rename column ename to username;
+
+desc temp6;
+
+--4. 기존 테이블에 있는 기존 컬럼의 타입 크기 수정 (modify)
+alter table temp6
+modify (username varchar2(2000));
+
+desc temp6;
+
+--5. 기존 테이블에 있는 기존 컬럼 삭제
+alter table temp6
+drop column username;
+
+select * from temp6;
+
+--TOOL 써도 되요 
+
+--6 고민
+--테이블에 있는 데이터가 필요없어요
+--delete from emp;
+--emp 1M  > 10만건 > 100M > delete 10만건 삭제 > 테이블 크기 > 100M
+
+
+--6.2 truncate(테이블 데이터 삭제 : 크기도 줄여요)
+--truncate(단점 : where 사용 안되요)
+--truncate table emp; 데이터 삭제 , 공간 삭제
+
+drop table temp6;
+
+desc temp6;
+----------------------------------------------------------------
+--기본 DDL END---------------------------------------------------
+
+--데이터베이스 (무결성) > 제약 
+--오라클.pdf (page 143)
+/*
+제 약 조 건 
+설     명 
+PRIMARY KEY(PK)  유일하게 테이블의 각행을 식별(NOT NULL과 UNIQUE조건을 만족) 
+FOREIGN KEY(FK)  열과 참조된 열 사이의 외래키 관계를 적용하고 설정합니다. 
+UNIQUE key(UK) 
+                 테이블의 모든 행을 유일하게 하는 값을 가진 열(NULL을 허용) 
+NOT NULL(NN) 
+                 열은 NULL값을 포함할 수 없습니다. 
+CHECK(CK) 
+                 참이어야 하는 조건을 지정함(대부분 업무 규칙을 설정) 
+
+제약은 아니지만 default sysdate 참고로 ^^
+*/
+/*
+1. primary key (PK) : not null , unique (유일값 보장)
+emp > empno > PK > where empno=7788 > 데이터 1건 보장
+성능 (pk > where empno=7788 > 성능 > index 
+
+테이블당 PK 1개 복합키 
+
+--언제
+1. create table 생성 PK 선행...
+2. create table 생성후 필요에 따라서 (alter table add constraint ...)
+3. select * from user_constraints;
+   select * from user_constraints where table_name='EMP';
+*/
+
+create table temp7(
+    --id number primary key --권장하지 않아요 (제약 SYS_C006977)
+    id number constraint pk_temp7_id primary key,
+    name varchar2(20) not null,
+    addr varchar2(50)
+);
+
+select * from user_constraints where table_name='TEMP7';
+
+insert into temp7(id,name,addr) 
+values(1,'홍길동','서울시 강남구');
+
+insert into temp7(id,name,addr) 
+values(1,'김유신','서울시 강북구');
+--ORA-00001: unique constraint (KOSA.PK_TEMP7_ID) violated
+
+insert into temp7(name,addr) 
+values('김유신','서울시 강북구');
+--ORA-01400: cannot insert NULL into ("KOSA"."TEMP7"."ID")
+
+---------------------------------------------------------------
+--Unique (uk)
+--테이블의 모든 행을 유일하게 하는 값을 가진 열(Null 허용)
+--테이블 몇개 (컬럼 수 만큼)
+
+create table temp8(
+    --id number primary key --권장하지 않아요 (제약 SYS_C006977)
+    id number constraint pk_temp8_id primary key,
+    name varchar2(20) not null,
+    jumin nvarchar2(6) constraint uk_temp8_jumin unique, --중복(null)
+    addr varchar2(50)
+);
+
+insert into temp8(id,name,jumin,addr)
+values(1,'김유신','123456','한양');
+
+insert into temp8(id,name,jumin,addr)
+values(2,'유신','123456','강남');
+--ORA-00001: unique constraint (KOSA.UK_TEMP8_JUMIN) violated
+
+insert into temp8(id,name,addr)
+values(2,'유신','강남');
+
+insert into temp8(id,name,addr)
+values(3,'유신','강남');
+
+select * from temp8;
+
+commit;
+--------------------------------------------------------------
+--제약 테이블 만들고 나서 필요하면 그때 적용
+create table temp9(id number);
+
+select * from user_constraints where table_name='TEMP9';
+
+alter table temp9
+add constraint pk_temp9_id primary key(id);
+--만약 3개 묶어서
+
+/*
+alter table temp9
+add constraint pk_temp9_id primary key(id,num,regdate);
+where id= and num= and refdate=
+*/
+
+drop table temp10;
+
+create table temp10(id number ,userid number);
+
+alter table temp10
+add constraint pk_temp10_id primary key(id,userid); --복합키
+
+select * from user_constraints where table_name='TEMP10';
+/*
+튜닝 (복합키) : 순서가 중요 
+1. 성능 : where id=1 and userid='hong'   1
+2. 성능 : where id=1 0  2
+3. 성능 : where userid='hong' 3 (index 적용 x) Table scan
+*/
+/*
+alter table temp9
+modify(ename not null)
+*/
+
+--check 제약 (업무 규칙 정의 : where gender in('남','여');
+
+create table temp11(
+    id number constraint pk_temp11_id primary key,
+    name varchar2(20) not null,
+    jumin nvarchar2(6) constraint uk_temp11_jumin unique, --중복(null)
+    addr varchar2(50),
+    age number constraints ck_temp11_age check(age >= 19)
+);
+select * from user_constraints where table_name='TEMP11';
+
+insert into temp11(id,name,jumin,addr,age)
+values(1,'홍길동','123456','서울시 강남구',18);
+--ORA-02290: check constraint (KOSA.CK_TEMP11_AGE) violated
+
+insert into temp11(id,name,jumin,addr,age)
+values(1,'홍길동','123456','서울시 강남구',19);
+
+commit;
+-------------------------------------------------------------
+--Foreign key
+--1. 관계를 정의 합니다 (1:1 . 1:N  M:N)
+--2. 관계안에서 참조제약 (emp (deptno) dept(deptno) 참조
+
+create table c_emp
+as
+  select empno , ename , deptno from emp where 1=2;
+
+select * from c_emp;
+
+create table c_dept
+as
+  select deptno , dname from dept where 1=2;
+  
+select * from c_emp;
+select * from c_dept;
+
+
+--PK (신용확보)
+alter table c_dept
+add constraint pk_c_dept_deptno primary key(deptno);
+
+--FK
+alter table c_emp
+add constraint fk_c_emp_deptno foreign key(deptno) references c_dept(deptno);
+
+
+select * from user_constraints where table_name='C_DEPT';
+select * from user_constraints where table_name='C_EMP';
+
+--부서
+insert into c_dept(deptno,dname) values(100,'인사팀');
+insert into c_dept(deptno,dname) values(200,'관리팀');
+insert into c_dept(deptno,dname) values(300,'회계팀');
+commit;
+
+select * from c_dept;
+
+--신입 입사
+insert into c_emp(empno,ename,deptno)
+values(1,'신입이',400);
+--ORA-02291: integrity constraint (KOSA.FK_C_EMP_DEPTNO) violated - parent key not found
+
+insert into c_emp(empno,ename,deptno)
+values(1,'신입이',100);
+
+select * from c_emp;
+commit;
+
+
+/* 사원 */
+CREATE TABLE EMP (
+	empno NUMBER NOT NULL, /* 사번 */
+	ename VARCHAR2(20), /* 이름 */
+	sal NUMBER, /* 급여 */
+	deptno NUMBER /* 부서번호 */
+);
+
+/* 부서 */
+CREATE TABLE DEPT (
+	deptno NUMBER, /* 부서번호 */
+	dname VARCHAR2(20) /* 부서명 */
+);
+
+ALTER TABLE EMP
+ADD CONSTRAINT PK_EMP_EMPNO	PRIMARY KEY (empno);
+
+ALTER TABLE DEPT
+ADD CONSTRAINT PK_DEPT_DEPTNO 	PRIMARY KEY (deptno);
+
+ALTER TABLE EMP
+ADD CONSTRAINT FK_DEPT_TO_EMP 	FOREIGN KEY (deptno)	REFERENCES DEPT (deptno);
+-----------------------------------------------------------------------------
+--제약 END--

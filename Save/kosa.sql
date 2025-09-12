@@ -2031,8 +2031,8 @@ truncate 데이터의 공간까지 없앰(데이터값빼고 할당된 공간까
 ----DML
 --1 . insert
 SELECT * FROM tab; -- 접속 계정 KOSA 볼수 있는 테이블 목록
-SELECT * FROM tab WHERE tname ="BOARD";
-SELECT * FROM tab WHERE tname="EMP";
+select * from tab where tname='BOARD';
+select * from tab where tname='EMP';
 
 CREATE TABLE temp (
 	id NUMBER PRIMARY KEY , -- NOT NULL
@@ -2295,7 +2295,7 @@ create table vtab1(
     no1 number,
     no2 number,
     no3 number GENERATED ALWAYS as (no1 + no2) VIRTUAL
-) --  네가 2개의 값을 넣으면 3번칸에서 가상으로 2개를 더해서 표시하겠다.
+); --  네가 2개의 값을 넣으면 3번칸에서 가상으로 2개를 더해서 표시하겠다.
 
 /*
 INSERT INTO vtab1 (no1, no2)
@@ -2468,8 +2468,10 @@ create table temp7(
 select * from user_constraints where table_name='TEMP7';
 
 insert into temp7(id,name,addr) values(1,'홍길동','서울시 강남구');
+
 -- insert into temp7(id,name,addr) values(1,'김유신','서울시 강북구');
 -- ORA-00001: unique constraint (KOSA.PK_TEMP7_ID) violated
+
 -- insert into temp7(id,name,addr) values('김유신','서울시 강북구');
 -- ORA-00947: not enough values 
 
@@ -2480,9 +2482,10 @@ insert into temp7(id,name,addr) values(1,'홍길동','서울시 강남구');
 -- ename not null unique 여러개 걸수 있으니 pk와는 같아보이지만 다름
 
 create table temp8(
-    id number constraint pk_temp7_id primary key,
+    --id number primary key --권장하지 않아요 (제약 SYS_C006977)
+    id number constraint pk_temp8_id primary key,
     name varchar2(20) not null,
-    jumin nvarchar2(6) constraint uk_temp8_jumin unique, -- 중복(null)
+    jumin nvarchar2(6) constraint uk_temp8_jumin unique, --중복(null)
     addr varchar2(50)
 );
 
@@ -2491,7 +2494,8 @@ values(1,'김유신', '123456','한양');
 
 insert into temp8(id,name,jumin,addr)
 values(2,'유신', '123456','강남');
--- unique constraint (KOSA.IK_TEMP9)JUMIN) violated
+--ORA-00001: unique constraint (KOSA.UK_TEMP8_JUMIN) violated
+
 insert into temp8(id,name,addr)
 values(2,'유신', '강남');
 
@@ -2559,6 +2563,7 @@ select * from user_constraints where table_name='TEMP11';
 insert into temp11(id,name,jumin,addr,age)
 values(1,'홍길동','123456','서울시 강남구',18);
 --ORA-02290: check constraint (KOSA.CK_TEMP11_AGE) viloated
+
 insert into temp11(id,name,jumin,addr,age)
 values(1,'홍길동','123456','서울시 강남구',19);
 
@@ -2568,16 +2573,22 @@ commit;
 -- 1.  관계를 정의한다 (1:1 1:n m:n) 자바에서 연관관계
 -- 2.  관계안에서 참조제약 (emp (deptno) dept(deptno) 참조
 
+
 create table c_emp
-as 
-  select empno , ename , deptno from emp where 1 = 2;
+as
+  select empno , ename , deptno from emp where 1=2;
+
 
 select * from c_emp;
 
+
+
 create table c_dept
-as 
-  select deptno , dname from dept where 1 = 2;
+as
+  select deptno , dname from dept where 1=2;
   
+  
+select * from c_emp;
 select * from c_dept;
 
 --pk (신용확보)
@@ -2589,21 +2600,25 @@ alter table c_emp
 add constraint fk_c_emp_deptno foreign key(deptno) references c_dept(deptno);
 -- ORA-02270: no matching unique or primary key for this column-list
 -- c_dept(deptno) 가 not null 해야됨 바로위 pk 신용확보 쪽에서 확인처리된거
-select * from user_constraints from where table_name='C_DEPT';
-select * from user_constraints from where table_name='C_EMP';
 
--- 부서
+select * from user_constraints where table_name='C_DEPT';
+select * from user_constraints where table_name='C_EMP';
+
+--부서
 insert into c_dept(deptno,dname) values(100,'인사팀');
-insert into c_dept(deptno,dname) values(100,'인사팀');
-insert into c_dept(deptno,dname) values(100,'인사팀');
+insert into c_dept(deptno,dname) values(200,'관리팀');
+insert into c_dept(deptno,dname) values(300,'회계팀');
 commit;
+
 select * from c_dept;
--- 신입 입사
+
+--신입 입사
 insert into c_emp(empno,ename,deptno)
-values(1, '신입이', 400);
--- 무결성 에러 부모키 발견안됨
-insert into c_emp(empno, ename,deptno)
-values(1, '신입이',100);
+values(1,'신입이',400);
+--ORA-02291: integrity constraint (KOSA.FK_C_EMP_DEPTNO) violated - parent key not found
+
+insert into c_emp(empno,ename,deptno)
+values(1,'신입이',100);
 
 select * from c_emp;
 commit;
@@ -2777,7 +2792,7 @@ where PRICE >( select avg(PRICE) from PRODUCTS);
 --2. 한 번이라도 주문한 적이 있는 사용자의 이름, 이메일을 조회하세요.
 --(사용 테이블: USERS, ORDERS)
 
-select u.USER_NAME, u.EMAIL
+select distinct u.USER_NAME, u.EMAIL
 from USERS u join (select ORDER_ID, USER_ID from ORDERS) o on u.USER_ID = o.USER_ID;
 
 
@@ -2789,26 +2804,28 @@ from USERS u join (select ORDER_ID, USER_ID from ORDERS) o on u.USER_ID = o.USER
 select p.PRODUCT_NAME , OD.QUANTITY
 from ORDER_DETAILS od left outer join (select PRODUCT_ID, PRODUCT_NAME 
  FROM PRODUCTS) p on od.PRODUCT_ID = P.PRODUCT_ID;
-
+ 
 --4. 2024년에 주문한 적이 있는 사용자의 이름, 이메일을 조회하세요.
 --(사용 테이블: USERS, ORDERS)
 --o.ORDER_ID o.USER_ID o.ORDER_DATE    u.USER_ID
 --USERS u ORDERS o
 
 
-select u.USER_NAME, u.EMAIL
+select distinct u.USER_NAME, u.EMAIL
 from USERS u left outer join (select ORDER_ID, USER_ID, ORDER_DATE from ORDERS) o
-on u.USER_ID = o.USER_ID; 
+on u.USER_ID = o.USER_ID
+where to_char(o.ORDER_DATE, 'YYYY') = 2024;
 
 
 
 --5. 가장 총 주문 금액이 높은 주문을 한 사용자의 이름, 이메일, 주문 금액을 조회하세요.
 --(사용 테이블: ORDERS, USERS)
-U.USER_NAME  U.EAAIL    O.TOTAL_AMOUNT
+
 
 select u.USER_NAME, u.EMAIL, o.TOTAL_AMOUNT
-from USER U left outer join (select ORDER_TOTAL_AMOUNT, USER_ID from ORDERS) o on
-u.USER_ID = o.USER_ID;
+from USERS u left outer join (select TOTAL_AMOUNT, USER_ID from ORDERS) o on
+u.USER_ID = o.USER_ID
+where o.TOTAL_AMOUNT = (select max(TOTAL_AMOUNT) from ORDERS);
 
 
 
@@ -2816,16 +2833,75 @@ u.USER_ID = o.USER_ID;
 --6. 한 번도 주문한 적이 없는 사용자의 이름, 이메일을 조회하세요.
 --(사용 테이블: USERS, ORDERS)
 
+select u.USER_NAME, u.EMAIL
+from USERS u left outer join (select USER_ID from ORDERS) o on
+u.USER_ID = o.USER_ID
+where o.USER_ID is null;
+
+
+
 
 --7. 각 카테고리별로 가장 비싼 상품의 카테고리 ID, 상품명, 가격을 조회하세요.
 --(사용 테이블: PRODUCTS)
+--CATEGORY_ID PRODUCT_NAME PRICE
+
+select CATEGORY_ID, PRODUCT_NAME, PRICE
+from PRODUCTS p1
+where PRICE = (select max(PRICE) from PRODUCTS p2 where p1.CATEGORY_ID = p2.CATEGORY_ID);
 
 
 
 --8. 쇼핑몰에서 가장 많은 주문을 한 사용자의 이름, 총 주문 수를 조회하세요.
 --(사용 테이블: USERS, ORDERS)
+/*
+u.USER_NAME u.USER_ID
+            o.USER_ID count(o.user_ID)
+
+select USER_NAME, USER_ID from USERS;
 
 
+select USER_ID, count(USER_ID) 
+from ORDERS 
+group by USER_ID 
+having count(USER_ID)= (
+                        select max(oc)
+                        from (select count(USER_ID) as oc
+                              from ORDERS
+                              group by USER_ID
+                              )
+);
+*/
+select u.USER_NAME as "사용자이름", count(o.ORDER_ID) as "총 주문"  
+From USERS u join ORDERS o on u.USER_ID = o.USER_ID
+group by u.USER_ID, u.USER_NAME
+having count(o.ORDER_ID) = (select max(oc)
+                            from (select count(ORDER_ID) as oc
+                                  from ORDERS
+                                  group by USER_ID)
+                            );
 
 --9. '아이폰 15' 상품을 구매한 적이 있는 사용자의 이름, 이메일을 조회하세요.
 --(사용 테이블: USERS, ORDERS, ORDER_DETAILS, PRODUCTS)
+--p.PRODUCT_ID                         p.PRODUCT_NAME =아이폰15
+--od.PRODUCT_ID od.ORDER_ID
+--               o.ORDER_ID o.USER_ID 
+
+--                          u.USER_ID
+
+--select PRODUCT_ID from PRODUCTS where PRODUCT_NAME ='아이폰 15';
+
+--select ORDER_ID, USER_ID from ORDERS;
+--select ORDER_ID, USER_ID from ORDERS o on o.ORDER_ID=od.ORDER_ID
+
+--select PRODUCT_ID, ORDER_ID from ORDER_DETAILS od on od.ORDER_ID=o.ORDER_ID
+--select * from PRODUCTS where PRODUCT_NAME ='아이폰 15';
+
+select u.USER_NAME, u.EMAIL
+from USERS u
+where u.USER_ID in (
+    select distinct o.USER_ID from ORDERS o join ORDER_DETAILS od on o.ORDER_ID = od.ORDER_ID 
+                                            join PRODUCTS p on od.PRODUCT_ID = P.PRODUCT_ID where p.PRODUCT_NAME ='아이폰 15'
+);
+
+
+

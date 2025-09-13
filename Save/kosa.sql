@@ -2903,5 +2903,810 @@ where u.USER_ID in (
                                             join PRODUCTS p on od.PRODUCT_ID = P.PRODUCT_ID where p.PRODUCT_NAME ='아이폰 15'
 );
 
+-----------------------------------------sep 12 end---------------------
+-----------------------------------------sep 13 start----------------------------
+
+--개발자 관점에서 FK 보기
+--master - detail 관계 (FK) 
+--부모 - 자식 관계 (FK)
+
+-- c_dept , c_emp (FK : deptno) 관계
+-- c_dept (master , 부모)
+
+--1. c_emp 테이블 있는 신입이 삭제
+select * from c_emp; --ok
+
+--2. c_dept 테이블 있는 100 부서 삭제
+delete from c_dept where deptno=100;  --  이미 100을 사용하고 (c_emp)
+--ORA-02292: integrity constraint (KOSA.FK_C_EMP_DEPTNO) violated - child record found
+
+delete from c_dept where deptno=200;  -- 200 는 참조당하고 있지 않아요 ...
+
+rollback;
+
+--2. c_dept 에 있는 100 데이터 삭제하고 싶어요
+--2.1 참조하는 ... c_emp  100 데이터 삭제 , 변경 다른 값
+
+--------------------------------------------------------------------------------
+/* cascade 부모쪽 날릴때 부모쪽 참조하고 있던 자식도 같이 날림
+오라클은 delete cascade 만 있고 다른 db는 update casecade가 있다.
+
+column datatype [CONSTRAINT constraint_name]
+ REFERENCES table_ name (column1[,column2,..] [ON DELETE CASCADE])
+column datatype,
+. . . . . . . ,
+[CONSTRAINT constraint_name] FOREIGN KEY (column1[,column2,..])
+ REFERENCES table_name (column1[,column2,..] [ON DELETE CASCADE]
 
 
+ON DELETE CASCADE 부모 테이블과 생명을 같이 하겠다
+
+alter table c_emp
+add constraint fk_c_emp_deptno foreign key(deptno) 
+references c_dept(deptno) ON DELETE CASCADE; 
+
+fk 걸때 on delete cascade 하는것
+원래라면 
+delete from c_emp where empno=1  >> deptno >> 100번
+delete from c_dept where deptno=100; 삭제 안되요 (참조 하고 있으니까)
+하지만 
+ON DELETE CASCADE 걸면 삭제되요 
+delete from c_dept where deptno=100;  --> c_emp 1 번 사원데이터 삭제 
+부모삭제 >> 참조하고 있는 자식도 삭제
+
+
+MS-SQL , my-sql
+ON DELETE CASCADE
+ON UPDATE CASCADE
+*/
+/* 사원 */
+CREATE TABLE EMP (
+	empno NUMBER NOT NULL, /* 사번 */
+	ename VARCHAR2(20), /* 이름 */
+	sal NUMBER, /* 급여 */
+	deptno NUMBER /* 부서번호 */
+);
+
+/* 부서 */
+CREATE TABLE DEPT (
+	deptno NUMBER, /* 부서번호 */
+	dname VARCHAR2(20) /* 부서명 */
+);
+
+ALTER TABLE EMP
+ADD CONSTRAINT PK_EMP_EMPNO	PRIMARY KEY (empno);
+
+ALTER TABLE DEPT
+ADD CONSTRAINT PK_DEPT_DEPTNO 	PRIMARY KEY (deptno);
+
+ALTER TABLE EMP
+ADD CONSTRAINT FK_DEPT_TO_EMP 	FOREIGN KEY (deptno)	REFERENCES DEPT (deptno);
+​
+-----------------------------------------------------------------------------
+-- 개발자에 필요한 SQL
+-- 오라클.pdf (100page)
+/*
+ SEQUENCE 특징 
+1) 자동적으로 유일 번호를 생성합니다. 
+2) 공유 가능한 객체 (여러개의 테이블이 같이 사용)
+3) 주로 기본 키 값을 생성하기 위해 사용됩니다. 
+4) 어플리케이션 코드를 대체합니다. 
+5) 메모리에 CACHE되면 SEQUENCE 값을 액세스 하는 효율성을 향상시킵니다. 
+   ex) 청원경찰이 은행 혼잡시 번호표 먼저 뽑아서 나눠주는 케이스
+
+CREATE  SEQUENCE  sequence_name 
+[INCREMENT  BY  n] 
+[START  WITH  n] 
+[{MAXVALUE n | NOMAXVALUE}] 
+[{MINVALUE n | NOMINVALUE}] 
+[{CYCLE | NOCYCLE}] 
+[{CACHE | NOCACHE}];
+
+sequence_name  
+INCREMENT  BY  n 
+START  WITH  n  
+MAXVALUE n  
+NOMAXVALUE   
+MINVALUE n  
+NOMINVALUE  
+CYCLE | NOCYCLE 
+CACHE | NOCACHE 
+
+
+SEQUENCE 의 이름입니다. 
+정수 값인 n으로 SEQUENCE번호 사이의 간격을 지정. 
+이 절이 생략되면 SEQUENCE는 1씩 증가. 
+생성하기 위해 첫번째 SEQUENCE를 지정. 
+이 절이 생략되면 SEQUENCE는 1로 시작. 
+SEQUENCE 를 생성할 수 있는 최대 값을 지정. 
+오름차순용 10^27 최대값과 내림차순용-1의 최소값을 지정. 
+최소 SEQUENCE 값을 지정. 
+오름차순용 1과 내림차순용-(10^26)의 최소값을 지정. 
+최대 또는 최소값에 도달한 후에 계속 값을 생성할 지의 여부를 
+지정. NOCYCLE 이 디폴트. 
+얼마나 많은 값이 메모리에 오라클 서버가 미리 할당하고 유지 
+하는가를 지정. 디폴트로 오라클 서버는 20을 CACHE.
+*/
+
+desc board;
+drop table board;
+
+create table board( 
+      boardid number constraint pk_board_boardid primary key,
+      title nvarchar2(50) 
+);
+
+select * from user_constraints where table_name='BOARD';
+
+------------- 글쓰기 작업을 한다면 ------------------
+--여기서 pk 의 의미는?
+-- pk not null, unique , index ( where empno = 7788 쓴다는 가정하에 인덱스 페이지로가서 빨리 찾아주겠다라는 의미로 pk나 유니크걸면 걸린다) 가 생성된다.
+
+insert into board(boardid, title) values(1,'방가');
+insert into board(boardid, title) values(2,'방가');
+
+select * from board;
+
+rollback;
+
+-- 질문
+-- 처음 글을 쓰면 1번 그 다음글 2, 3
+-- 어떤 논리?
+
+insert into board(boardid, title) 
+values((select count(boardid)+1 from board) , '방가');
+
+ insert into board(boardid, title) 
+values((select count(boardid)+1 from board) , '방가');
+
+insert into board(boardid, title) 
+values((select count(boardid)+1 from board) , '방가');
+
+select * from board;
+--1	방가
+--2	방가
+--3	방가
+
+-- 이때 글삭제
+delete from board where boardid=1;
+
+insert into board(boardid, title) 
+values((select count(boardid)+1 from board) , '방가');
+-- 보더 아이디1개 삭제한상태서 + 카운터 가니 터짐 ORA-00001: unique constraint (KOSA.PK_BOARD_BOARDID) violated
+-- 문제 발생
+-- 글 삭제 할 경우 ( 번호 생성 중복값 )
+
+rollback;
+
+select * from board;
+
+insert into board(boardid, title) 
+values((select max(boardid) from board) , '방가');
+-- null 나옴
+
+insert into board(boardid, title) 
+values((select nvl(max(boardid),0)+1 from board) , '방가1');
+insert into board(boardid, title) 
+values((select nvl(max(boardid),0)+1 from board) , '방가2');
+insert into board(boardid, title) 
+values((select nvl(max(boardid),0)+1 from board) , '방가3');
+insert into board(boardid, title) 
+values((select nvl(max(boardid),0)+1 from board) , '방가4');
+
+select * from board;
+
+delete from board where boardid=1;
+
+
+select * from board;
+
+insert into board(boardid, title) 
+values((select nvl(max(boardid),0)+1 from board) , '방가5');
+
+select * from board;
+--2	방가2
+--3	방가3
+--4	방가4
+--5	방가5
+commit;
+------------------------------------------------------------
+-- count , max 순번 만드는 논리
+-- 시퀀스 객체 ( 순번 ) 채번기 ( 번호표 뽑기 )
+-- 공유 객체
+
+create sequence board_num;
+-- 지가 알아서 시퀀스에 등록된다.
+
+-- 채번 
+select board_num.nextval from dual; -- 번호뽑기
+
+--은행 번호표처럼 기계에 마지막에 뽑은 번호 표시기능
+select board_num.currval from dual; -- 마지막 번호확인
+
+-- 공유객체 --> 여러개의 테이블이 서로 공유 (다른 게시판이라도 전체 글 넘버링 공유되는거처럼)
+
+/*
+
+  A 테이블         B테이블
+  in : 1            in : 3
+  in : 2            in : 5
+  in : 4
+  
+*/
+commit;
+
+create table kboard(
+    num number constraint pk_kboard_num primary key,
+    title nvarchar2(20)
+);
+
+create sequence kboard_num;
+
+insert into kboard(num, title)
+values(kboard_num.nextval, '1번');
+insert into kboard(num, title)
+values(kboard_num.nextval, '2번');
+insert into kboard(num, title)
+values(kboard_num.nextval, '3번');
+
+select * from kboard;
+
+delete from  kboard where num = 3;
+
+insert into kboard(num, title)
+values(kboard_num.nextval, '4번');
+ 
+select * from kboard;
+
+------------------------------------------------------------------------
+-- 마리아 db는 시퀀스있음
+-- sequence  채번기
+/*
+ 오라클     (O)
+ MS-SQL     (2012버전부터 O)
+ My-SQL     (X)   테이블에 종속적으로 붙는건 있다
+ Mariadb    (O)
+ PostgreSQL (O)
+
+순번을 생성 (테이블 종속)
+Ms-SQL
+        create table board(boardnum int identity(1,1)
+        insert into board(title) values('제목') 
+        
+my-sql
+        create table board(boardnum int auto_increment , title)
+        insert into board(title) values('제목')
+
+*/
+
+-- sequence 옵션 
+create sequence seq_num
+start with 10
+increment by 2;
+
+select seq_num.nextval from dual;
+-- 2개씩 올라가게됨
+-- 게시판
+/*
+테이블에는 
+1 , 방가1
+2 , 방가2
+3 , 방가3
+4 , 방가4
+
+1,2,3,4,5,6 ......... 1000
+가장 나중에 쓴글 ( 최신글 )
+
+select * from board order by num desc
+*/ 
+/*
+ rownum
+ 1. 의사컬럼 : 실제 물리적으로 존재하는 컬럼은 아니고 논리적으론 존재
+ create table 생성안되요
+ rownum : 실제로 테이블에 컬럼으로 존재하지는 않지만 내부적으로 행 번호를 
+          부여하는 컬럼
+
+*/
+select * from emp;
+
+select rownum , empno , ename
+from emp;
+
+select rownum , empno , ename , sal
+from emp --여기까지로 실행하면 rownum 정렬이됨
+order by sal; -- sal 기준으로 정렬됨 그래서 rownum이 뒤죽박죽
+
+-- from -> select -> order by  실행 순서
+
+-- 통계데이터
+-- 1. 기준데이터 만든다. 그걸가지고 다시 순번처리한다.
+
+select * from (
+               select empno, ename, sal
+               from emp
+               order by sal -- 기준
+              );
+
+select rownum , e.*  -- e.*면 e에 속하는 모든것 
+from (
+       select empno, ename, sal
+       from emp
+       order by sal -- 기준
+       )e;  
+       
+-- 업무 : 우리회원 중에서 3명 (상위 3명)
+-- Top-n 쿼리 (기준이 되는 데이터 생성 (정렬) ... 상위 n 개 가져오기)
+-- MS-SQL : select top 10 , * from emp order by sal asc
+-- 오라클은 top이라는 키워드(쿼리) 자체가 없음
+
+-- Oracle (Top n(x))
+-- 1. 정렬(선행)
+-- 2. 정렬 기준 rownum 조건
+
+-- 급여를 많이 받는 순으로 정렬된 데이터
+
+select empno , ename , sal
+from emp
+order by sal desc;
+              
+select *
+from (
+        select empno , ename , sal
+        from emp
+        order by sal desc;
+     ) e;
+
+              
+select rownum, e.empno , e.ename , e.sal
+from (
+        select empno , ename , sal
+        from emp
+        order by sal desc
+     ) e;
+
+-- 급여를 많이 받는 사원 5명
+-- 정렬시켜놓고 원하는 데이터를 추출하는것
+
+select *
+from (
+      select rownum as num , e.empno , e.ename , e.sal
+            from (
+                select empno , ename , sal
+                from emp
+                order by sal desc
+                 ) e
+      ) n where num <= 5; --이게 탑앤쿼리
+-- 대용량 데이터 조회하기        
+-- 페이징 처리 (Today Point)
+-- or between A and B
+
+-- 게시판 10만건
+-- 10개씩 묶어서 페이징 처리하고 들고오는 방식
+
+/*
+게시판의 데이터 102건
+totaldata = 102
+pagesize = 10 (한 화면에 보여지는 데이터 row 수)'
+
+pagecount > 11개 페이지
+
+[1][2][3][4][5][6][7][8][9][10][11]
+<a herf = 'list.do?page=1'>1</a>
+
+1번 페이지 > 1~10 번글을 보겠다 > num between 1 and 10
+2번 페이지 > 11~20 >> num between 11 and 20
+
+[1][2][3][4][5][다음]
+[이전][6][7][8][9][10][다음]
+[이전][11][12] 
+이건 자동화 안됨 코드 짜야됨
+
+*/
+------------------------- hr 계정이동--------------------------------------
+select user from dual;
+show user;
+
+select * from employees; --107건
+
+/*
+total 107 건
+pagesize = 10
+page 개수 
+[1][2][3][4][5][6][7][8][9][10][11]
+
+[1] 번글을 클릭한 상태면 > 1~10 게시글
+[11] > 나머지
+*/
+-- 1단계 ( 데이터 정렬의 기준을 잡는다)
+-- EMPLOYEE_ID 를 기준으로 잡는다
+select * from employees
+order by employee_id asc;
+
+-- 2단계 ( 기준 데이터 순번 부여하기)
+
+select  * 
+from (
+      select * from employees order by employee_id asc
+     ) e
+     
+select  rownum as num , e.* 
+from (
+      select * from employees order by employee_id asc
+     ) e   -- 107건   
+where rownum <= 50; -- 50건
+
+-- 3단계
+-- [1] 페이지 클릭
+select *
+from (
+            select  rownum as num , e.* 
+            from (
+                  select * from employees order by employee_id asc
+                 ) e   -- 107건   
+            where rownum <= 10 -- 10건 -> 10 파라메터값 end값
+      ) n where num >=1;
+-- rownum <= 10 where num >= 1 (10과 1이라는 값은 자바코드 논리 생성)      
+-- rownum <= ?  where num >= ?
+-- 오라클db 페이징하는 탑앤쿼리 기본논리
+
+--[2] 페이지 클릭
+select *
+from (
+            select  rownum as num , e.* 
+            from (
+                  select * from employees order by employee_id asc
+                 ) e      
+            where rownum <= 20
+      ) n where num >=2; 
+
+
+select *
+from (
+            select  rownum as num , e.* 
+            from (
+                  select * from employees order by employee_id asc
+                 ) e   -- 107건   
+            where rownum <= 50 -- 50건 -> 50 파라메터값 end값
+      ) n where num >=41;  -- 100보다 작은것 -> 50보다 작은거 -> 41보다 작은거 -> 41 파라메터 start 값   
+
+--  rownum <= ?     where num >=?  (10 과 1이라는 값은 자바코드 논리 생성) 
+
+SELECT *
+FROM (
+    SELECT ROW_NUMBER() OVER (ORDER BY employee_id ASC) AS num, e.*
+    FROM employees e
+) n
+WHERE n.num BETWEEN 1 AND 10;
+      
+-- 오라클 12c 이상
+select *
+from employees
+order by employee_id
+offset 0 rows fetch next 10 row only;
+
+-- offset : 시작 위치 지정 ( 0부터 시작)
+-- fetch next : 가져올 개수
+-- 예 : offset 10 rows fetch next 10 rows only : -> 11~20번째 까지
+----------------------------------------------
+-- view
+-- 오라클 pdf 192 
+/*     있으면쓰고 없으면 안쓰고 [] 정규 표현식에서 
+ 물리적인 테이블을 볼수 있는 가상테이블 = view
+ 종이로 가린상태에서 종이에 구멍 뚫어서 그 구멍으로만 보이는 개념
+ 
+CREATE [OR REPLACE] [FORCE | NOFORCE] VIEW view_name [(alias[,alias,...])]
+AS Subquery
+[WITH CHECK OPTION [CONSTRAINT constraint ]]
+[WITH READ ONLY]
+
+OR REPLACE              이미 존재한다면 다시 생성한다.
+FORCE Base Table        유무에 관계없이 VIEW 을 만든다.
+NOFORCE                 기본 테이블이 존재할 경우에만 VIEW 를 생성한다.
+view_name               VIEW 의 이름
+Alias                   Subquery 를 통해 선택된 값에 대한 Column 명이 된다.
+Subquery                SELECT 문장을 기술한다.
+WITH CHECK OPTION       VIEW 에 의해 액세스 될 수 있는 행만이 입력,갱신될 수 있다.
+Constraint              CHECK OPTON 제약 조건에 대해 지정된 이름이다.
+WITH READ ONLY          이 VIEW 에서 DML 이 수행될 수 없게 한다.
+
+*/
+
+-- View 가상 테이블 ( 물리적인 테이블 볼수 있는 쿼리문을 가지고 있는 객체)
+-- 사용 방법은 테이블 처럼 ^^
+--  성능과는 
+--목적
+--1. 개발자의 편리성 (성능과는 무관) > join > subquery > view 사용 
+--1.1  복잡한 쿼리(JOIN) > view > 필요한때 불러서 
+--2. 보안 ( 신입사원에게 emp 테이블 권한을 주지 않고 .. view 를 통해서 특정 컬럼 데이터만 접근)
+--view 통해서  select 
+--view 통해서  DML( insert , update , delete) 가능 ... view 볼 수 있는 데이터 
+
+
+-- 1. 보안 측면 (민감한 정보 가리기) (신입 사원이 입사하면 특정 컬럼만 볼수 있게 View를 만들어서 제공)
+--      view 로 보는 내용은 원본 테이블 수정이 된다.
+-- 2. 편의성 ( in line view 대신에 view 객체를 만들어서 영속적으로 등록 사용) 
+
+--자기 부서의 평균월급다 더 많은 월급을 받는 사원의 사번 , 이름 , 부서번호 , 
+--부서별 평균월급을 출력하세요
+--만약에 부서와 부서별 평균월급 담고 있는 테이블 제공
+--in line view
+/*
+select e.empno , e.ename, e.deptno , e.sal , s.avgsal
+from emp e join 
+       (select deptno , trunc(avg(sal),0) as avgsal from emp group by deptno) s
+on e.deptno = s.deptno
+where e.sal > s.avgsal;
+*/      
+create view view001 
+as 
+    select empno, ename ,sal
+    from emp;
+--ORA-01031: insufficient privileges
+-- kosa 권한 변경  
+
+create view deptdata
+as 
+ select deptno , trunc(avg(sal),0) as avgsal
+ from emp group by deptno;
+ 
+select e.empno , e.ename, e.deptno , e.sal , s.avgsal
+from emp e join deptdata s
+on e.deptno = s.deptno
+where e.sal > s.avgsal;
+--------------------------------------------------------
+--  view 쿼리문장을 가지고 있는 객체
+create view view 001
+as
+ slect empno, enmae ,sal
+ from emp;
+select * from view001;
+
+select * from view001 where sal > 1000;
+
+select comm from view001;
+--ORA-00942: table or view does not exist
+
+-- view 가 볼수 있는 데이터만 처리 가능
+
+create or replace view v_001
+as
+  select empno , ename 
+  from emp;
+
+select * from v_001;
+
+
+create or replace view v_001
+as
+  select empno , ename , job 
+  from emp;
+
+select * from v_001;
+
+-- alter 개념 없고 or replace 있으니 그냥 추가하면 그대로 추가되서 보여줌
+-- 바로바로 셀렉트 커리문이 갱신되서 뷰가 바뀌는것
+
+
+
+create or replace view v_001
+as
+  select empno , ename , job 
+  from emp;
+
+select * from v_001
+where empno=7788;
+
+-- 조인
+-- 부서 이름 가져오기 위해서
+-- 귀찮으니 view로 가져오자
+-- 이게 편리성
+create or replace view view_002
+as 
+  select e.empno, e.ename , e.deptno , d.dname
+  from emp e join dept d
+  on e.deptno = d.deptno;
+  
+select * from view_002;  
+
+-- 혹자는 view 는 SQL 문장 덩어리 ../
+-- 테이블 처럼 사용가능
+
+-- in line view > view 객체로 만들어서 join 하는 것이 편하다.
+
+-- 직종별 평균급여를 볼 수 있는 뷰를 만들어라
+
+create or replace view view_003
+as
+ select deptno, trunc( avg(sal))
+ from emp e
+ group by deptno;
+ -- ORA-00998: must name this expression with a column alias
+ --  trunc( avg(sal)) 컬럼이름이 원본아니니 그런것
+create or replace view view_003
+as
+ select deptno, trunc( avg(sal)) as avgsal
+ from emp e
+ group by deptno;
+ 
+select * from view_003;
+ 
+-- view 통해서 DML (insert, update , delete)
+-- 되도록이면 view 는 조회(select)
+
+select * from copyemp;
+
+create or replace view v_emp
+as 
+    select empno, ename, job ,sal
+    from copyemp;
+    
+-- view 를 통한 DML 작업
+
+update v_emp
+set sal = 0;
+-- copyemp의 sal이 0으로 변경됨
+select * from v_emp;
+select * from copyemp;
+
+create or replace view v_emp
+as 
+    select empno, ename, sal
+    from copyemp;
+
+select * from v_emp;
+
+update v_emp
+set job='IT';
+-- ORA-00904: "JOB": invalid identifier
+-- view를 통해서 볼수 잇는 데이터 (select , insert , update ,delete 가능)
+commit;
+-------------------------------------------------------------
+
+-- 30번 부서 사원들의 직종 , 이름 , 월급 담는 view를 만드는데,
+-- 각각의 컬럼명을 직종, 사원이름 , 월급으로 ALISA를 주고 월급이
+-- 300 보다 많은 사원들만 추출하도록 하라. view101
+select ename, job ,sal
+from emp
+where deptno = 30  and sal> 300;
+
+create or replace view view101
+as
+  select ename, job , sal
+  from emp
+  where deptno = 30  and sal> 300;
+ 
+select * from view101;
+
+--------------------------------------------------------------------------
+-- view end ------------------------------------------------------------
+----------------------------------------------------------------------
+-- 분석함수
+-- 통계데이터 ( 쿼리 )
+-- 집계 행 데이터 -> 열 데이터 바꾸기
+-- 집계 열 데이터 -> 행 데이터 바꾸기
+
+-- decode, case ( 표준화 )
+-- 11g 부터 pivot 기능 추가 ( 엑셀의 그것과 같다) 행데이터 열데이터 전환
+/*
+deptno, cnt
+10       3
+20       5 
+30       6  
+
+차트화 분석용으로 만들기 위해서는 
+
+deptno_10  deptno_20  deptno_30 
+    3          5         6
+
+데이터 처리 용이(차트)
+
+
+*/
+
+select deptno , count(*) as cnt
+from emp
+group by deptno
+order by deptno asc;
+--10	3
+--20	5
+--30	6
+
+--case 활용 
+-- 행데이터를 열데이터로 전환
+-- 관습적으로 컬럼명을 붙여준다.
+select deptno, case when deptno = 10 then 1 else 0 end dept_10, -- 컬럼으로 데이터
+               case when deptno = 20 then 1 else 0 end dept_20,
+               case when deptno = 30 then 1 else 0 end dept_30
+from emp
+order by deptno asc;
+
+--order by 1 asc; 첫번째 컬럼으로 하겠다
+
+select deptno, sum(case when deptno = 10 then 1 else 0 end) as dept_10, -- 컬럼으로 데이터
+               sum(case when deptno = 20 then 1 else 0 end) as dept_20,
+               sum(case when deptno = 30 then 1 else 0 end) as dept_30
+from emp
+group by deptno
+order by deptno asc;
+
+--deptno 컬름은 의미가 없다
+-- 컬럼 이름에 의미를 부여해서 집중하겠다
+
+select  sum(case when deptno = 10 then 1 else 0 end) as dept_10, -- 컬럼으로 데이터
+        sum(case when deptno = 20 then 1 else 0 end) as dept_20,
+        sum(case when deptno = 30 then 1 else 0 end) as dept_30
+from emp;
+
+-------------------------
+-- 통계 집계 데이터 만들기
+
+select deptno, count(*) as count
+from emp
+group by deptno;
+
+select *
+from (
+      select deptno, count(*) as count
+      from emp
+      group by deptno
+     ) x;
+     
+select case when deptno=10 then ecount else null end dept_10,
+       case when deptno=20 then ecount else null end dept_20,
+       case when deptno=30 then ecount else null end dept_30
+from (
+      select deptno, count(*) as ecount
+      from emp
+      group by deptno
+     ) x;  
+     
+     
+select max(case when deptno=10 then ecount else null end) as dept_10,
+       max(case when deptno=20 then ecount else null end) as dept_20,
+       max(case when deptno=30 then ecount else null end) as dept_30
+from (
+      select deptno, count(*) as ecount
+      from emp
+      group by deptno
+     ) x;       
+     
+     
+-------------------------------------------------------------------------------
+/*
+SELECT * 
+FROM (피벗 대상 쿼리문)
+PIVOT (그룹함수(집계컬럼) FOR 피벗컬럼 IN (피벗컬럼값 as 별칭)
+
+ 오라클 11g부터 PIVOT 기능을 제공합니다. 
+ 기존 이하버전에서는 DECODE 함수를 이용하여 로우를 컬럼으로 변경하는 작업을 하였습니다. 
+PIVOT 기능을 이용하면 DECODE의 복잡하고 비직관적인 코드를 조금 더 직관적으로 작성할 수 있습니다.
+아쉬운 점은 PIVOT 기능을 사용하더라도 PIVOT을 할 컬럼을 미리 정의를 해 놓아야 한다는 점이다.
+상황에 맞게 PIVOT를 사용할지 DECODE를 사용할지 결정해서 사용하면 될꺼 같습니다.
+
+*/
+
+-- 직종별 , 월별 입사 건수
+/*
+
+직종 1월 ,  2월 , 3월 , 4월 ....
+IT    0      1     2     0    
+MA    1      0     4     5 
+
+*/
+select job , to_char(hiredate,'FMMM') || '월' as hire_month
+from emp;
+
+select *
+from (
+      select job , to_char(hiredate,'FMMM') || '월' as hire_month
+      from emp
+     )
+pivot (
+       count(*) for hire_month IN('1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월')
+      );
+      
+--CLERK    	2	0	0	0	0	0	0	0	0	1	0	1
+--SALESMAN	0	2	0	0	0	0	0	0	2	0	0	0
+--PRESIDENT	0	0	0	0	0	0	0	0	0	0	1	0
+--MANAGER   0	0	0	2	0	1	0	0	0	0	0	0
+--ANALYST   0	0	0	0	0	0	0	0	0	2	0	0
